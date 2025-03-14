@@ -1,9 +1,6 @@
 import random
-import cgi
 import json
 import tempfile
-
-import six
 
 import ckan.plugins.toolkit as toolkit
 from frictionless_ckan_mapper import frictionless_to_ckan as converter
@@ -76,7 +73,7 @@ def package_create_from_datapackage(context, data_dict):
                 toolkit.get_action('package_delete')(
                     context, {'id': dataset_id})
             except Exception as e2:
-                six.raise_from(e, e2)
+                raise e from e2
             else:
                 raise e
 
@@ -88,10 +85,7 @@ def _load_and_validate_datapackage(url=None, upload=None):
     try:
 
         if _upload_attribute_is_valid(upload):
-            if toolkit.check_ckan_version(min_version="2.9"):
-                dp = datapackage.DataPackage(upload)
-            else:
-                dp = datapackage.DataPackage(upload.file)
+            dp = datapackage.DataPackage(upload)
         else:
 
             dp = datapackage.DataPackage(url)
@@ -151,14 +145,11 @@ def _create_and_upload_resource_with_inline_data(context, resource):
     data = resource['data']
 
     del resource['data']
-    if not isinstance(data, six.string_types):
+    if not isinstance(data, str):
         data = json.dumps(data, indent=2)
 
     with tempfile.NamedTemporaryFile(prefix=prefix) as f:
-        if six.PY3:
-            f.write(six.binary_type(data, 'utf-8'))
-        else:
-            f.write(six.binary_type(data))
+        f.write(bytes(data, 'utf-8'))
         f.seek(0)
 
         _create_and_upload_resource(context, resource, f)
@@ -183,21 +174,10 @@ def _create_and_upload_local_resource(context, resource):
 def _create_and_upload_resource(context, resource, the_file):
     resource['url'] = 'url'
     resource['url_type'] = 'upload'
-
-    if toolkit.check_ckan_version(min_version="2.9"):
-        resource['upload'] = FileStorage(the_file, the_file.name, the_file.name)
-    else:
-        resource['upload'] = _UploadLocalFileStorage(the_file)
+    resource['upload'] = FileStorage(the_file, the_file.name, the_file.name)
 
     toolkit.get_action('resource_create')(context, resource)
 
 
 def _upload_attribute_is_valid(upload):
     return hasattr(upload, 'read') or hasattr(upload, 'file') and hasattr(upload.file, 'read')
-
-# Used only in CKAN < 2.9
-class _UploadLocalFileStorage(cgi.FieldStorage):
-    def __init__(self, fp, *args, **kwargs):
-        self.name = fp.name
-        self.filename = fp.name
-        self.file = fp

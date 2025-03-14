@@ -2,13 +2,7 @@
 
 {% block package_resources %}
   <div style="float:right; margin-right: -7px;">
-
-    {% if h.ckan_version().split('.')|map('int')|list >= [2, 9, 0] %}
-        <a href="{% url_for 'datapackager.export_datapackage', package_id=pkg.id %}" class='btn' id='export_datapackage_button'>
-    {% else %}
-        <a href="{% url_for 'export_datapackage', package_id=pkg.id %}" class='btn' id='export_datapackage_button'>
-    {% endif %}
-
+    <a href="{% url_for 'datapackager.export_datapackage', package_id=pkg.id %}" class='btn' id='export_datapackage_button'>
        <i class='icon-download'></i>Download Data Package
     </a>
   </div>

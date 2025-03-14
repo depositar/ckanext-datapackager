@@ -1,7 +1,6 @@
 import json
 import tempfile
-from six import StringIO, BytesIO
-import six
+from io import StringIO
 try:
     from unittest import mock
 except ImportError:
@@ -48,11 +47,7 @@ class TestPackageCreateFromDataPackage():
             ]
         }
 
-        if toolkit.check_ckan_version(min_version="2.9"):
-            upload = StringIO(json.dumps(datapackage))
-        else:
-            upload = mock.MagicMock()
-            upload.file = StringIO(json.dumps(datapackage))
+        upload = StringIO(json.dumps(datapackage))
 
         with pytest.raises(toolkit.ValidationError):
             helpers.call_action('package_create_from_datapackage', upload=upload)
@@ -294,10 +289,7 @@ class TestPackageCreateFromDataPackage():
 
         }
         with tempfile.NamedTemporaryFile() as tmpfile:
-            if six.PY3:
-                tmpfile.write(six.binary_type(json.dumps(datapackage), 'utf-8'))
-            else:
-                tmpfile.write(six.binary_type(json.dumps(datapackage)))
+            tmpfile.write(bytes(json.dumps(datapackage), 'utf-8'))
             tmpfile.flush()
 
             dataset = helpers.call_action('package_create_from_datapackage',

@@ -3,12 +3,7 @@
 {% block subtitle %}{{ _('Import Data Package') }}{% endblock %}
 
 {% block breadcrumb_content %}
-      {% if h.ckan_version().split('.')|map('int')|list >= [2, 9, 0] %}
-        <li>{% link_for _('Datasets'), named_route='dataset.search' %}</li>
-      {% else %}
-        <li>{% link_for _('Datasets'), controller='package', action='search' %}</li>
-      {% endif %}
-
+  <li>{% link_for _('Datasets'), named_route='dataset.search' %}</li>
   <li class="active"><a href="">{{ _('Import Data Package') }}</a></li></a></li>
 {% endblock %}
 

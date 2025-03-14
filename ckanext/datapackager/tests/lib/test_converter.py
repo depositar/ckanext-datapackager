@@ -282,7 +282,7 @@ class TestDataPackageToDatasetDict(unittest.TestCase, object):
         assert result["name"] == datapackage_dict["name"]
         assert result["title"] == datapackage_dict["title"]
         assert result["version"] == datapackage_dict["version"]
-    
+
     # TODO: check if the name must be lowercased on frictionless-ckan-mapper
     #def test_name_is_lowercased(self):
     #    self.datapackage.update(
@@ -344,7 +344,7 @@ class TestDataPackageToDatasetDict(unittest.TestCase, object):
         author = {"name": "John Smith", "email": "jsmith@email.com"}
         self.datapackage.update({
             'contributors': [{
-                "title": author["name"], 
+                "title": author["name"],
                 "email": author["email"],
                 "role": "author"
             }]
