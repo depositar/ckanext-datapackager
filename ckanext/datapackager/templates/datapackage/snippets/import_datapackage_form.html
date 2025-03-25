@@ -2,6 +2,7 @@
 {% set action = h.url_for('datapackager.import_datapackage') %}
 
 <form class="dataset-form form-horizontal" method="post" action="{{ action }}" data-module="basic-form" enctype="multipart/form-data">
+    {{ h.csrf_input() if 'csrf_input' in h }}
     {% block errors %}{{ form.errors(error_summary) }}{% endblock %}
 
     {% block basic_fields %}
