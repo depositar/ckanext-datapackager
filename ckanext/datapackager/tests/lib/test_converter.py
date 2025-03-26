@@ -20,6 +20,8 @@ class TestConvertToDict(unittest.TestCase, object):
             "title": "Countries GDP",
             "version": "1.0",
             "resources": [self.resource_dict],
+            "license_id": "",
+            "license_title": ""
         }
 
     def test_basic_dataset_in_setup_is_valid(self):
