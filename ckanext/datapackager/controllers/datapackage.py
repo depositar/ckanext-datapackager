@@ -22,7 +22,7 @@ def new(data=None, errors=None, error_summary=None):
     errors = errors or {}
     error_summary = error_summary or {}
     default_data = {
-        'owner_org': toolkit.request.params.get('group'),
+        'owner_org': toolkit.request.args.get('group'),
     }
     data = data or default_data
 
