@@ -81,7 +81,6 @@ class TestDataPackageController():
 
         # Open and validate the response as a JSON.
         dp = datapackage.DataPackage(json.loads(response.body))
-        print(json.loads(response.body))
         dp.validate()
 
         # Check the contents of the datapackage.json file.
