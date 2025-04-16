@@ -51,7 +51,8 @@ def import_datapackage():
             params = toolkit.request.params
 
         if 'upload' in toolkit.request.files:
-            params['upload'] = toolkit.request.files['upload']
+            if toolkit.request.files['upload'].filename:
+                params['upload'] = toolkit.request.files['upload']
 
         dataset = toolkit.get_action('package_create_from_datapackage')(
             context,
