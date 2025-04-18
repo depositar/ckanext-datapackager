@@ -1,10 +1,6 @@
 import json
 import tempfile
 from io import StringIO
-try:
-    from unittest import mock
-except ImportError:
-    import mock
 
 import pytest
 import responses
