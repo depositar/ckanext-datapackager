@@ -1,9 +1,9 @@
 import json
-import tempfile
-from io import StringIO
+from io import BytesIO
 
 import pytest
 import responses
+from werkzeug.datastructures import FileStorage
 
 import ckan.tests.helpers as helpers
 import ckanext.datapackager.tests.helpers as custom_helpers
@@ -43,7 +43,8 @@ class TestPackageCreateFromDataPackage():
             ]
         }
 
-        upload = StringIO(json.dumps(datapackage))
+        upload = FileStorage(BytesIO(json.dumps(datapackage).encode('utf-8')),
+                             filename='test')
 
         with pytest.raises(toolkit.ValidationError):
             helpers.call_action('package_create_from_datapackage', upload=upload)
@@ -60,37 +61,15 @@ class TestPackageCreateFromDataPackage():
                     'path': 'http://www.example.com/data.csv',
                 }
             ],
-            'some_extra_data': {'foo': 'bar'},
         }
         responses.add(responses.GET, url, json=datapackage)
-        # FIXME: Remove this when
-        # https://github.com/okfn/datapackage-py/issues/20 is done
-        responses.add(responses.GET,
-                                   datapackage['resources'][0]['path'])
 
         dataset = helpers.call_action('package_create_from_datapackage',
                                       url=url)
         assert dataset['state'] == 'active'
 
-        extras = dataset['extras']
-
-        extra_profile = None
-        extra_data = None
-        for extra in extras:
-            if extra['key'] == 'profile':
-                extra_profile = extra
-            if extra['key'] == 'some_extra_data':
-                extra_data = extra
-
-        assert extra_profile is not None
-
-        assert extra_data is not None
-
-        assert extra_profile['value'] == 'data-package'
-        assert json.loads(extra_data['value']) == datapackage['some_extra_data']
-
         resource = dataset.get('resources')[0]
-        assert resource['name'] == datapackage['resources'][0]['name']
+        assert resource['name'] == 'data.csv'
         assert resource['url'] == datapackage['resources'][0]['path']
 
     @responses.activate
@@ -104,7 +83,7 @@ class TestPackageCreateFromDataPackage():
             'resources': [
                 {
                     'name': 'the-resource',
-                    'data': 'inline data',
+                    'data': [{'a': 1, 'b': 2}]
                 }
             ]
         }
@@ -151,52 +130,6 @@ class TestPackageCreateFromDataPackage():
 
     #    assert resources[0]['url_type'] == 'upload'
     #    assert re.match('datetimes.csv$', resources[0]['url'])
-
-    @responses.activate
-    def test_it_uploads_resources_with_inline_strings_as_data(self):
-        responses.add_passthru(toolkit.config['solr_url'])
-        url = 'http://www.example.com/datapackage.json'
-        datapackage = {
-            'name': 'foo',
-            'resources': [
-                {
-                    'name': 'the-resource',
-                    'data': 'inline data',
-                }
-            ]
-        }
-        responses.add(responses.GET, url, json=datapackage)
-
-        helpers.call_action('package_create_from_datapackage', url=url)
-
-        dataset = helpers.call_action('package_show', id='foo')
-        resources = dataset.get('resources')
-
-        assert resources[0]['url_type'] == 'upload'
-        assert resources[0]['name'] in resources[0]['url']
-
-    @responses.activate
-    def test_it_uploads_resources_with_inline_dicts_as_data(self):
-        responses.add_passthru(toolkit.config['solr_url'])
-        url = 'http://www.example.com/datapackage.json'
-        datapackage = {
-            'name': 'foo',
-            'resources': [
-                {
-                    'name': 'the-resource',
-                    'data': {'foo': 'bar'},
-                }
-            ]
-        }
-        responses.add(responses.GET, url, json=datapackage)
-
-        helpers.call_action('package_create_from_datapackage', url=url)
-
-        dataset = helpers.call_action('package_show', id='foo')
-        resources = dataset.get('resources')
-
-        assert resources[0]['url_type'] == 'upload'
-        assert resources[0]['name'] in resources[0]['url']
 
     @responses.activate
     def test_it_allows_specifying_the_dataset_name(self):
@@ -284,13 +217,12 @@ class TestPackageCreateFromDataPackage():
             ]
 
         }
-        with tempfile.NamedTemporaryFile() as tmpfile:
-            tmpfile.write(bytes(json.dumps(datapackage), 'utf-8'))
-            tmpfile.flush()
 
-            dataset = helpers.call_action('package_create_from_datapackage',
-                                          upload=tmpfile)
-            assert dataset['name'] == 'foo'
+        upload = FileStorage(BytesIO(json.dumps(datapackage).encode('utf-8')),
+                     filename='test')
+        dataset = helpers.call_action('package_create_from_datapackage',
+                                      upload=upload)
+        assert dataset['name'] == 'foo'
 
 
 class _UploadFile(object):

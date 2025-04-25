@@ -1,5 +1,5 @@
 import ckan.plugins.toolkit as toolkit
-from frictionless_ckan_mapper import ckan_to_frictionless as converter
+from dplib.plugins.ckan.models import CkanPackage
 
 
 @toolkit.side_effect_free
@@ -26,4 +26,4 @@ def package_show_as_datapackage(context, data_dict):
     dataset_dict = toolkit.get_action('package_show')(context,
                                                       {'id': dataset_id})
 
-    return converter.dataset(dataset_dict)
+    return CkanPackage.from_dict(dataset_dict).to_dp().to_dict()

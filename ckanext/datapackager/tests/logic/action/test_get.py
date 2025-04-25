@@ -8,7 +8,7 @@ import pytest
 import ckan.tests.factories as factories
 import ckan.tests.helpers as helpers
 
-from frictionless_ckan_mapper import ckan_to_frictionless as converter
+from dplib.plugins.ckan.models import CkanPackage
 import ckan.plugins.toolkit as toolkit
 
 @pytest.mark.ckan_config('ckan.plugins', 'datapackager')
@@ -23,9 +23,9 @@ class TestGet(unittest.TestCase):
         factories.Resource(package_id=dataset['id'], url='http://test.com/test-url-2',
             schema='{"fields":[{"type":"string", "name":"col1"}]}')
 
-        expected_output = converter.dataset(
+        expected_output = CkanPackage.from_dict(
             helpers.call_action('package_show', id=dataset['id'])
-        )
+        ).to_dp().to_dict()
 
         datapackage_dict = helpers.call_action('package_show_as_datapackage',
                                                id=dataset['name'])

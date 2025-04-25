@@ -1,12 +1,13 @@
 import random
-import json
 import tempfile
+import os
 
 import ckan.plugins.toolkit as toolkit
-from frictionless_ckan_mapper import frictionless_to_ckan as converter
+from dplib.models import Package
+from dplib.plugins.ckan.models import CkanPackage
+from frictionless import Package as fl_package
+from frictionless import FrictionlessException
 from werkzeug.datastructures import FileStorage
-
-import datapackage
 
 
 def package_create_from_datapackage(context, data_dict):
@@ -38,7 +39,8 @@ def package_create_from_datapackage(context, data_dict):
         raise toolkit.ValidationError(msg)
 
     dp = _load_and_validate_datapackage(url=url, upload=upload)
-    dataset_dict = converter.package(dp.to_dict())
+    dataset_dict = CkanPackage.from_dp(
+        Package.from_dict(dp.to_dict())).to_dict()
 
     owner_org = data_dict.get('owner_org')
     if owner_org:
@@ -85,21 +87,18 @@ def _load_and_validate_datapackage(url=None, upload=None):
     try:
 
         if _upload_attribute_is_valid(upload):
-            dp = datapackage.DataPackage(upload)
+            # frictionless.Package only accepts a file path
+            # rather a file-like object
+            ext = os.path.splitext(upload.filename)[1]
+            with tempfile.NamedTemporaryFile(suffix=ext) as f:
+                upload.save(f.name)
+                dp = fl_package(f.name)
         else:
+            dp = fl_package(url)
 
-            dp = datapackage.DataPackage(url)
+    except FrictionlessException as e:
 
-        dp.validate()
-    except (datapackage.exceptions.DataPackageException,
-            datapackage.exceptions.SchemaError,
-            datapackage.exceptions.ValidationError) as e:
-
-        msg = {'datapackage': e}
-        raise toolkit.ValidationError(msg)
-
-    if not dp.safe():
-        msg = {'datapackage': ['the Data Package has unsafe attributes']}
+        msg = {'datapackage': e.to_errors()}
         raise toolkit.ValidationError(msg)
 
     return dp
@@ -129,30 +128,10 @@ def _package_create_with_unique_name(context, dataset_dict, name=None):
 def _create_resources(dataset_id, context, resources):
     for resource in resources:
         resource['package_id'] = dataset_id
-        if resource.get('data'):
-            _create_and_upload_resource_with_inline_data(context, resource)
-        elif resource.get('path'):
+        if resource.get('path'):
             _create_and_upload_local_resource(context, resource)
         else:
-            # TODO: Investigate why in test_controller the resource['url'] is a list
-            if type(resource['url']) is list:
-                resource['url'] = resource['url'][0]
             toolkit.get_action('resource_create')(context, resource)
-
-
-def _create_and_upload_resource_with_inline_data(context, resource):
-    prefix = resource.get('name', 'tmp')
-    data = resource['data']
-
-    del resource['data']
-    if not isinstance(data, str):
-        data = json.dumps(data, indent=2)
-
-    with tempfile.NamedTemporaryFile(prefix=prefix) as f:
-        f.write(bytes(data, 'utf-8'))
-        f.seek(0)
-
-        _create_and_upload_resource(context, resource, f)
 
 
 def _create_and_upload_local_resource(context, resource):

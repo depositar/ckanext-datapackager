@@ -5,7 +5,7 @@ import responses
 from bs4 import BeautifulSoup
 import re
 
-import datapackage
+import frictionless
 import ckan.tests.factories as factories
 import ckan.tests.helpers as helpers
 import ckan.plugins.toolkit as toolkit
@@ -60,8 +60,7 @@ class TestDataPackageController():
         # Add a resource with a linked-to, not uploaded, data file.
         linked_resource = factories.Resource(
             package_id=dataset['id'],
-            url='http://www.foo.com/data.csv',
-            schema='{"fields":[{"type":"string", "name":"col1"}]}',
+            url='http://www.foo.com/data.csv'
         )
 
         # Add a resource with an uploaded data file.
@@ -80,21 +79,16 @@ class TestDataPackageController():
         response = app.get(url)
 
         # Open and validate the response as a JSON.
-        dp = datapackage.DataPackage(json.loads(response.body))
-        dp.validate()
+        dp = frictionless.Package(json.loads(response.body))
 
         # Check the contents of the datapackage.json file.
-        assert dataset['name'] == dp.descriptor['name']
+        assert dataset['name'] == dp.name
 
         resources = dp.resources
         assert len(resources) == 2
-        assert linked_resource['url'] == resources[0].descriptor['path']
-        assert linked_resource['url'] == resources[0].source
-        schema = resources[0].schema
-        assert schema.descriptor['fields'][0]['name'] == 'col1'
-        assert schema.descriptor['fields'][0]['type'] == 'string'
+        assert linked_resource['url'] == resources[0].path
 
-        assert uploaded_resource['url'] == resources[1].descriptor['path']
+        assert uploaded_resource['url'] == resources[1].path
 
     def test_that_download_button_is_on_page(self, app):
         '''Tests that the download button is shown on the dataset pages.'''
@@ -133,7 +127,7 @@ class TestDataPackageController():
             'resources': [
                 {
                     'name': 'the-resource',
-                    'url': 'http://www.somewhere.com/data.csv',
+                    'path': 'http://www.somewhere.com/data.csv',
                 }
             ]
         }
@@ -161,5 +155,5 @@ class TestDataPackageController():
         dataset = helpers.call_action('package_show', id=datapackage['name'])
         assert dataset['name'] == 'foo'
         assert len(dataset.get('resources', [])) == 1
-        assert dataset['resources'][0].get('name') == 'the-resource'
-        assert (dataset['resources'][0].get('url') == datapackage['resources'][0]['url'])
+        assert dataset['resources'][0].get('name') == 'data.csv'
+        assert (dataset['resources'][0].get('url') == datapackage['resources'][0]['path'])

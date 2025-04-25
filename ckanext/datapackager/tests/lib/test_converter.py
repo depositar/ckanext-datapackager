@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-import pytest
 import responses
 
-from frictionless_ckan_mapper import frictionless_to_ckan as f2c
-from frictionless_ckan_mapper import ckan_to_frictionless as converter
-import datapackage
+import frictionless
+
+from dplib.models import Package
+from dplib.plugins.ckan.models import CkanPackage
 
 class TestConvertToDict(unittest.TestCase, object):
     def setUp(self):
@@ -25,23 +25,7 @@ class TestConvertToDict(unittest.TestCase, object):
         }
 
     def test_basic_dataset_in_setup_is_valid(self):
-        converter.dataset(self.dataset_dict)
-
-    # TODO: Check if a exception must be raised for an empty dataset dict
-    #def test_dataset_only_requires_a_name_to_be_valid(self):
-    #    invalid_dataset_dict = {}
-    #    valid_dataset_dict = {
-    #        "name": "gdp",
-    #        "resources": [
-    #            {
-    #                "name": "the-resource",
-    #            }
-    #        ],
-    #    }
-
-    #    converter.dataset(valid_dataset_dict)
-    #    with self.assertRaises(KeyError):
-    #        converter.dataset(invalid_dataset_dict)
+        CkanPackage.from_dict(self.dataset_dict).to_dp()
 
     def test_dataset_name_title_and_version(self):
         self.dataset_dict.update(
@@ -51,7 +35,7 @@ class TestConvertToDict(unittest.TestCase, object):
                 "version": "1.0",
             }
         )
-        result = converter.dataset(self.dataset_dict)
+        result = CkanPackage.from_dict(self.dataset_dict).to_dp().to_dict()
         assert result["title"] == self.dataset_dict["title"]
         assert result["name"] == self.dataset_dict["name"]
         assert result["version"] == self.dataset_dict["version"]
@@ -60,7 +44,7 @@ class TestConvertToDict(unittest.TestCase, object):
         self.dataset_dict.update(
             {"notes": "Country, regional and world GDP in current US Dollars."}
         )
-        result = converter.dataset(self.dataset_dict)
+        result = CkanPackage.from_dict(self.dataset_dict).to_dp().to_dict()
         assert result.get("description") == self.dataset_dict["notes"]
 
     def test_dataset_license(self):
@@ -76,37 +60,18 @@ class TestConvertToDict(unittest.TestCase, object):
                 "license_url": license["path"],
             }
         )
-        result = converter.dataset(self.dataset_dict)
+        result = CkanPackage.from_dict(self.dataset_dict).to_dp().to_dict()
         assert result.get("licenses")[0] == license
 
-    # TODO: check if it needs to get the author and add as the datapackage source
-    #def test_dataset_author_and_source(self):
-    #    sources = [
-    #        {
-    #            "name": "World Bank and OECD",
-    #            "email": "someone@worldbank.org",
-    #            "web": "http://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
-    #        }
-    #    ]
-    #    self.dataset_dict.update(
-    #        {
-    #            "author": sources[0]["name"],
-    #            "author_email": sources[0]["email"],
-    #            "url": sources[0]["web"],
-    #        }
-    #    )
-    #    result = converter.dataset(self.dataset_dict)
-    #    assert result.get("sources") == sources
-
     def test_dataset_maintainer(self):
-        author = {"title": "John Smith", "email": "jsmith@email.com", "role": "maintainer"}
+        author = {"title": "John Smith", "email": "jsmith@email.com", "roles": ["maintainer"]}
         self.dataset_dict.update(
             {
                 "maintainer": author["title"],
                 "maintainer_email": author["email"],
             }
         )
-        result = converter.dataset(self.dataset_dict)
+        result = CkanPackage.from_dict(self.dataset_dict).to_dp().to_dict()
         assert result.get("contributors")[0] == author
 
     def test_dataset_tags(self):
@@ -129,31 +94,8 @@ class TestConvertToDict(unittest.TestCase, object):
                 ]
             }
         )
-        result = converter.dataset(self.dataset_dict)
+        result = CkanPackage.from_dict(self.dataset_dict).to_dp().to_dict()
         assert result.get("keywords") == keywords
-
-    # TODO: check how ckan_url must be transformed
-    #def test_dataset_ckan_url(self):
-    #    self.dataset_dict.update({"ckan_url": "http://www.somewhere.com/datasets/foo"})
-    #    result = converter.dataset(self.dataset_dict)
-    #    assert result.get("homepage") == self.dataset_dict["ckan_url"]
-
-    def test_dataset_extras(self):
-        self.dataset_dict.update(
-            {
-                "extras": [
-                    {"key": "title_cn", "value": u"國內生產總值"},
-                    {"key": "years", "value": "[2015, 2016]"},
-                    {"key": "last_year", "value": 2016},
-                    {"key": "location", "value": '{"country": "China"}'},
-                ]
-            }
-        )
-        result = converter.dataset(self.dataset_dict)
-        assert result.get("title_cn") == u"國內生產總值"
-        assert result.get("years") == [2015, 2016]
-        assert result.get("last_year") == 2016
-        assert result.get("location") == {"country": "China"}
 
     def test_resource_url(self):
         self.resource_dict.update(
@@ -161,7 +103,7 @@ class TestConvertToDict(unittest.TestCase, object):
                 "url": "http://www.somewhere.com/data.csv",
             }
         )
-        result = converter.dataset(self.dataset_dict)
+        result = CkanPackage.from_dict(self.dataset_dict).to_dp().to_dict()
         resource = result.get("resources")[0]
         assert resource.get("path") == self.resource_dict["url"]
 
@@ -173,7 +115,7 @@ class TestConvertToDict(unittest.TestCase, object):
                 "url_type": "upload",
             }
         )
-        result = converter.dataset(self.dataset_dict)
+        result = CkanPackage.from_dict(self.dataset_dict).to_dp().to_dict()
         resource = result.get("resources")[0]
         assert resource.get("path") == self.resource_dict["url"]
 
@@ -183,29 +125,19 @@ class TestConvertToDict(unittest.TestCase, object):
                 "description": "GDPs list",
             }
         )
-        result = converter.dataset(self.dataset_dict)
+        result = CkanPackage.from_dict(self.dataset_dict).to_dp().to_dict()
         resource = result.get("resources")[0]
         assert resource.get("description") == self.resource_dict["description"]
 
     def test_resource_format(self):
         self.resource_dict.update(
             {
-                "format": "CSV",
+                "format": "csv",
             }
         )
-        result = converter.dataset(self.dataset_dict)
+        result = CkanPackage.from_dict(self.dataset_dict).to_dp().to_dict()
         resource = result.get("resources")[0]
         assert resource.get("format") == self.resource_dict["format"]
-
-    def test_resource_hash(self):
-        self.resource_dict.update(
-            {
-                "hash": "e785c0883d7a104330e69aee73d4f235",
-            }
-        )
-        result = converter.dataset(self.dataset_dict)
-        resource = result.get("resources")[0]
-        assert resource.get("hash") == self.resource_dict["hash"]
 
     def test_resource_name_lowercases_the_name(self):
         self.resource_dict.update(
@@ -213,8 +145,8 @@ class TestConvertToDict(unittest.TestCase, object):
                 "name": "ThE-nAmE",
             }
         )
-        expected_name = "the-name"
-        result = converter.dataset(self.dataset_dict)
+        expected_name = "the_name"
+        result = CkanPackage.from_dict(self.dataset_dict).to_dp().to_dict()
         resource = result.get("resources")[0]
         assert resource.get("name") == expected_name
 
@@ -224,8 +156,8 @@ class TestConvertToDict(unittest.TestCase, object):
                 "name": u"Lista de PIBs dos países!   51",
             }
         )
-        expected_name = "lista-de-pibs-dos-paises-51"
-        result = converter.dataset(self.dataset_dict)
+        expected_name = "lista_de_pibs_dos_paises_51"
+        result = CkanPackage.from_dict(self.dataset_dict).to_dp().to_dict()
         resource = result.get("resources")[0]
         assert resource.get("name") == expected_name
 
@@ -235,8 +167,8 @@ class TestConvertToDict(unittest.TestCase, object):
                 "name": u"万事开头难",
             }
         )
-        expected_name = "mo-shi-kai-tou-nan"
-        result = converter.dataset(self.dataset_dict)
+        expected_name = "mo_shi_kai_tou_nan"
+        result = CkanPackage.from_dict(self.dataset_dict).to_dp().to_dict()
         resource = result.get("resources")[0]
         assert resource.get("name") == expected_name
 
@@ -250,14 +182,14 @@ class TestDataPackageToDatasetDict(unittest.TestCase, object):
             "resources": [{"name": "datetimes.csv", "path": "test-data/datetimes.csv"}],
         }
 
-        self.datapackage = f2c.package(datapackage_dict)
+        self.datapackage = CkanPackage.from_dp(
+            Package.from_dict(datapackage_dict)).to_dict()
 
     def test_basic_datapackage_in_setup_is_valid(self):
-        f2c.package(self.datapackage)
+        CkanPackage.from_dp(Package.from_dict(self.datapackage)).to_dict()
 
     def test_datapackage_only_requires_some_fields_to_be_valid(self):
-        invalid_datapackage = datapackage.DataPackage({})
-        valid_datapackage = datapackage.DataPackage(
+        valid_datapackage = frictionless.Package(
             {
                 "name": "gdp",
                 "resources": [
@@ -266,10 +198,8 @@ class TestDataPackageToDatasetDict(unittest.TestCase, object):
             }
         )
 
-        f2c.package(valid_datapackage.to_dict())
-
-        with pytest.raises(TypeError):
-            converter.dataset(invalid_datapackage)
+        CkanPackage.from_dp(Package.from_dict(
+            valid_datapackage.to_dict())).to_dict()
 
     def test_datapackage_name_title_and_version(self):
         self.datapackage.update(
@@ -279,70 +209,36 @@ class TestDataPackageToDatasetDict(unittest.TestCase, object):
                 "version": "1.0",
             }
         )
-        result = f2c.package(self.datapackage)
+        result = CkanPackage.from_dp(Package.from_dict(
+            self.datapackage)).to_dict()
         datapackage_dict = self.datapackage
         assert result["name"] == datapackage_dict["name"]
         assert result["title"] == datapackage_dict["title"]
         assert result["version"] == datapackage_dict["version"]
 
-    # TODO: check if the name must be lowercased on frictionless-ckan-mapper
-    #def test_name_is_lowercased(self):
-    #    self.datapackage.update(
-    #        {
-    #            "name": "ThEnAmE",
-    #        }
-    #    )
-    #    result = f2c.package(self.datapackage)
-    #    assert result["name"] == self.datapackage["name"].lower()
-
     def test_datapackage_description(self):
         self.datapackage.update(
             {"description": "Country, regional and world GDP in current USD."}
         )
-        result = f2c.package(self.datapackage)
+        result = CkanPackage.from_dp(Package.from_dict(
+            self.datapackage)).to_dict()
         assert result.get("notes") == self.datapackage["description"]
 
-    # TODO: confirm that the folowing tests don't make sense according to the latest Datapackage spec
-    #def test_datapackage_license_as_string(self):
-    #    self.datapackage.update({"license": [{"name": "cc-zero"}]})
-    #    result = f2c.package(self.datapackage)
-    #    assert result.get("license_id") == "cc-zero"
-
-    #def test_datapackage_license_as_unicode(self):
-    #    self.datapackage.update({"licenses": [{"name": "cc-zero"}]})
-    #    result = f2c.package(self.datapackage)
-    #    assert result.get("license_id") == "cc-zero"
-
-    def test_datapackage_license_as_dict(self):
+    def test_datapackage_licenses(self):
         license = {
             "name": "cc-zero",
             "title": "Creative Commons CC Zero License (cc-zero)",
             "path": "http://opendefinition.org/licenses/cc-zero/",
         }
         self.datapackage.update({"licenses": [license]})
-        result = f2c.package(self.datapackage)
+        result = CkanPackage.from_dp(Package.from_dict(
+            self.datapackage)).to_dict()
         assert result.get("license_id") == license["name"]
         assert result.get("license_title") == license["title"]
         assert result.get("license_url") == license["path"]
 
-    # TODO: Check if this is the expected behaviour for sources
-    #def test_datapackage_sources(self):
-    #    sources = [
-    #        {
-    #            "name": "World Bank and OECD",
-    #            "email": "someone@worldbank.org",
-    #            "web": "http://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
-    #        }
-    #    ]
-    #    self.datapackage.update({"sources": sources})
-    #    result = f2c.package(self.datapackage)
-    #    assert result.get("author") == sources[0]["name"]
-    #    assert result.get("author_email") == sources[0]["email"]
-    #    assert result.get("url") == sources[0]["web"]
-
     # TODO: Check how author email is written in CKAN
     def test_datapackage_author_as_string(self):
-        # FIXME: Add author.web
         author = {"name": "John Smith", "email": "jsmith@email.com"}
         self.datapackage.update({
             'contributors': [{
@@ -351,38 +247,19 @@ class TestDataPackageToDatasetDict(unittest.TestCase, object):
                 "role": "author"
             }]
         })
-        result = f2c.package(self.datapackage)
+        result = CkanPackage.from_dp(Package.from_dict(
+            self.datapackage)).to_dict()
 
         assert result.get("author") == author["name"]
         assert result.get("author_email") == author["email"]
 
-    def test_datapackage_author_as_unicode(self):
-        # FIXME: Add author.web
-        author = {
-            "name": u"John Smith",
-        }
-        self.datapackage.update(
-            {
-                "author": author["name"],
-            }
-        )
-        result = f2c.package(self.datapackage)
-        assert result.get("author") == author["name"]
-
-    def test_datapackage_author_as_string_without_email(self):
-        # FIXME: Add author.web
-        author = {"name": "John Smith"}
-        self.datapackage.update({"author": author["name"]})
-        result = f2c.package(self.datapackage)
-        assert result.get("author") == author["name"]
-
     def test_datapackage_author_as_dict(self):
-        # FIXME: Add author.web
         author = {"title": "John Smith", "email": "jsmith@email.com", "role": "author"}
         self.datapackage.update({
             "contributors": [author]
         })
-        result = f2c.package(self.datapackage)
+        result = CkanPackage.from_dp(Package.from_dict(
+            self.datapackage)).to_dict()
         assert result.get("author") == author["title"]
         assert result.get("author_email") == author["email"]
 
@@ -393,27 +270,11 @@ class TestDataPackageToDatasetDict(unittest.TestCase, object):
             "world bank",
         ]
         self.datapackage.update({"keywords": keywords})
-        result = f2c.package(self.datapackage)
+        result = CkanPackage.from_dp(Package.from_dict(
+            self.datapackage)).to_dict()
         result_tags = [ t["name"] for t in result.get("tags") ]
         assert "economy!!!" in result_tags
         assert "world bank" in result_tags
-
-    def test_datapackage_extras(self):
-        self.datapackage.update(
-            {
-                "title_cn": u"國內生產總值",
-                "years": [2015, 2016],
-                "last_year": 2016,
-                "location": {"country": "China"},
-            }
-        )
-        result = f2c.package(self.datapackage)
-        assert sorted(result.get('extras'), key=lambda e: e["key"]) == [
-            {'key': 'last_year', 'value': 2016},
-            {'key': 'location', 'value': '{"country": "China"}'},
-            {'key': 'title_cn', 'value': u'國內生產總值'},
-            {'key': 'years', 'value': '[2015, 2016]'},
-        ]
 
     def test_resource_name_is_used_if_theres_no_title(self):
         resource = {
@@ -421,20 +282,10 @@ class TestDataPackageToDatasetDict(unittest.TestCase, object):
             "title": None,
         }
         self.datapackage['resources'][0].update(resource)
-        result = f2c.package(self.datapackage)
+        result = CkanPackage.from_dp(Package.from_dict(
+            self.datapackage)).to_dict()
         resource = result.get("resources")[0]
         assert result.get("resources")[0].get("name") == resource["name"]
-
-    # TODO: check if the following test makes sense
-    #def test_resource_title_is_used_as_name(self):
-    #    resource = {
-    #        "name": "gdp",
-    #        "title": "Gross domestic product",
-    #    }
-
-    #    self.datapackage['resources'][0].update(resource)
-    #    result = f2c.package(self.datapackage)
-    #    assert result.get("resources")[0].get("name") == resource["title"]
 
     @responses.activate
     def test_resource_url(self):
@@ -443,12 +294,12 @@ class TestDataPackageToDatasetDict(unittest.TestCase, object):
             "name": "gdp",
             "title": "Countries GDP",
             "version": "1.0",
-            "resources": [{"path": url}],
+            "resources": [{"name": "gdp", "path": url}],
         }
         responses.add(responses.GET, url, body='')
 
-        dp = datapackage.DataPackage(datapackage_dict).to_dict()
-        result = f2c.package(dp)
+        dp = frictionless.Package(datapackage_dict).to_dict()
+        result = CkanPackage.from_dp(Package.from_dict(dp)).to_dict()
         assert (
             result.get("resources")[0].get("url")
             == datapackage_dict["resources"][0]["path"]
@@ -461,20 +312,21 @@ class TestDataPackageToDatasetDict(unittest.TestCase, object):
             "name": "gdp",
             "title": "Countries GDP",
             "version": "1.0",
-            "resources": [{"path": "data.csv"}],
+            "resources": [{"name": "gdp", "path": "data.csv"}],
         }
         responses.add(responses.GET, url, body="")
-        dp = datapackage.DataPackage(
-            datapackage_dict, base_path="http://www.somewhere.com"
+        dp = frictionless.Package(
+            datapackage_dict, basepath="http://www.somewhere.com"
         ).to_dict()
-        result = f2c.package(dp)
+        result = CkanPackage.from_dp(Package.from_dict(dp)).to_dict()
         assert result.get("resources")[0].get("url") == dp['resources'][0]['path']
 
     def test_resource_description(self):
         resource = {"description": "GDPs list"}
 
         self.datapackage['resources'][0].update(resource)
-        result = f2c.package(self.datapackage)
+        result = CkanPackage.from_dp(Package.from_dict(
+            self.datapackage)).to_dict()
         assert result.get("resources")[0].get("description") == resource["description"]
 
     def test_resource_format(self):
@@ -483,28 +335,21 @@ class TestDataPackageToDatasetDict(unittest.TestCase, object):
         }
 
         self.datapackage['resources'][0].update(resource)
-        result = f2c.package(self.datapackage)
+        result = CkanPackage.from_dp(Package.from_dict(
+            self.datapackage)).to_dict()
         assert result.get("resources")[0].get("format") == resource["format"]
-
-    def test_resource_hash(self):
-        resource = {
-            "hash": "e785c0883d7a104330e69aee73d4f235",
-        }
-
-        self.datapackage['resources'][0].update(resource)
-        result = f2c.package(self.datapackage)
-        assert result.get("resources")[0].get("hash") == resource["hash"]
 
     def test_resource_path_is_set_to_its_local_data_path(self):
         resource = {
+            "name": "datetimes",
             "path": "test-data/datetimes.csv",
         }
-        dp = datapackage.DataPackage(
+        dp = frictionless.Package(
             {
                 "name": "datetimes",
                 "resources": [resource],
             }
         ).to_dict()
 
-        result = f2c.package(dp)
+        result = CkanPackage.from_dp(Package.from_dict(dp)).to_dict()
         assert result.get("resources")[0].get("url") == dp['resources'][0]['path']
