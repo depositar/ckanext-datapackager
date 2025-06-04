@@ -16,28 +16,14 @@ responses.add_passthru(toolkit.config['solr_url'])
 
 @pytest.fixture
 def sysadmin_env():
-    try:
-        from ckan.tests.factories import SysadminWithToken
-        user = SysadminWithToken()
-        return {"Authorization": user["token"]}
-    except ImportError:
-        # ckan <= 2.9
-        from ckan.tests.factories import Sysadmin
-        user = Sysadmin()
-        return {"REMOTE_USER": user["name"].encode("ascii")}
+    user = factories.SysadminWithToken()
+    return {"Authorization": user["token"]}
 
 
 @pytest.fixture
 def user_env():
-    try:
-        from ckan.tests.factories import UserWithToken
-        user = UserWithToken()
-        return {"Authorization": user["token"]}
-    except ImportError:
-        # ckan <= 2.9
-        from ckan.tests.factories import User
-        user = User()
-        return {"REMOTE_USER": user["name"].encode("ascii")}
+    user = factories.UserWithToken()
+    return {"Authorization": user["token"]}
 
 
 @pytest.mark.ckan_config('ckan.plugins', 'datapackager')

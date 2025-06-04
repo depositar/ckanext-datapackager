@@ -7,7 +7,7 @@ This extension adds importing and exporting of [Data Packages][data-packages] to
 
 ## Requirements
 
-* CKAN >= 2.9
+* CKAN >= 2.10
 
 ## Installing
 
