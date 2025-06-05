@@ -55,7 +55,6 @@ class TestDataPackageController():
         uploaded_resource = helpers.call_action('resource_create', {},
             package_id=dataset['id'],
             name='AllstarFull',
-            url='_needed_for_ckan<2.6',
             upload=csv_file,
         )
 
@@ -90,19 +89,13 @@ class TestDataPackageController():
 
     def test_new_renders(self, app, user_env):
         url = toolkit.url_for('datapackager.import_datapackage')
-        if toolkit.check_ckan_version(min_version="2.10.0"):
-            response = app.get(url, headers=user_env)
-        else:
-            response = app.get(url, environ_overrides=user_env)
+        response = app.get(url, headers=user_env)
         assert 200 == response.status_code
 
     @pytest.mark.ckan_config('ckan.auth.create_unowned_dataset', False)
     def test_new_requires_user_to_be_able_to_create_packages(self, app, user_env):
         url = toolkit.url_for('datapackager.import_datapackage')
-        if toolkit.check_ckan_version(min_version="2.10.0"):
-            response = app.get(url, headers=user_env, status=401)
-        else:
-            response = app.get(url, environ_overrides=user_env, status=401)
+        response = app.get(url, headers=user_env, status=401)
         assert 'Unauthorized to create a dataset' in response.body
 
     @responses.activate
@@ -120,18 +113,11 @@ class TestDataPackageController():
         responses.add('GET', datapackage_url, json=datapackage)
 
         url = toolkit.url_for('datapackager.import_datapackage', url=datapackage_url)
-        if toolkit.check_ckan_version(min_version="2.10.0"):
-            response = app.post(
-                url,
-                headers=user_env,
-                follow_redirects=False
-            )
-        else:
-            response = app.post(
-                url,
-                environ_overrides=user_env,
-                follow_redirects=False
-            )
+        response = app.post(
+            url,
+            headers=user_env,
+            follow_redirects=False
+        )
         assert response.status_code == 302
 
         # Should redirect to dataset's page
