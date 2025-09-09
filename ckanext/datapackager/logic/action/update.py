@@ -40,7 +40,7 @@ def datapackage_update(context, data_dict):
     if total_size_of_resources > max_size * 1 << 20:
         raise toolkit.ValidationError(
             {'message': toolkit._('Only datasets with a total resource size '
-                                  'of {0}MB or less are supported')
+                                  'of {0} MB or less are supported')
                                .format(max_size)})
 
     datapackage = util.generate_datapackage_json(dataset)
