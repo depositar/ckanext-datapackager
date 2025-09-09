@@ -2,3 +2,5 @@ jsonschema==4.23.0
 python-slugify==8.0.4
 dplib-py==1.1.0
 frictionless==5.18.1
+ckanapi==4.8
+requests==2.32.3

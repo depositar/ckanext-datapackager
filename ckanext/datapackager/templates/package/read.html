@@ -1,11 +1,17 @@
 {% ckan_extends %}
 
 {% block package_resources %}
-  <div style="float:right; margin-right: -7px;">
-    <a href="{% url_for 'datapackager.export_datapackage', package_id=pkg.id %}" class='btn btn-default btn-light' id='export_datapackage_button'>
-       <i class='fa fa-arrow-circle-down fa-arrow-circle-o-down'></i>Download Data Package
-    </a>
-  </div>
+  {% if pkg.resources %}
+    {# Hide the Data Package zip resource from the list of resources. #}
+    {% set zip_res = h.pop_datapackage_zip_res(pkg) %}
+    {% if zip_res %}
+      <div style="float:right">
+        <a href="{{ zip_res.url }}" class="btn btn-default btn-light" id="download_datapackage_button">
+          <i class="fa fa-arrow-circle-down fa-arrow-circle-o-down"></i>{{ _('Download Data Package') }}
+        <a>
+      </div>
+    {% endif %}
+  {% endif %}
   <div class="clearfix"></div>
   {{ super() }}
 {% endblock %}

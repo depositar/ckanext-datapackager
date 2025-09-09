@@ -1,5 +1,6 @@
 import ckan.plugins.toolkit as toolkit
-from dplib.plugins.ckan.models import CkanPackage
+
+from ckanext.datapackager.lib import util
 
 
 @toolkit.side_effect_free
@@ -26,4 +27,4 @@ def package_show_as_datapackage(context, data_dict):
     dataset_dict = toolkit.get_action('package_show')(context,
                                                       {'id': dataset_id})
 
-    return CkanPackage.from_dict(dataset_dict).to_dp().to_dict()
+    return util.generate_datapackage_json(dataset_dict)

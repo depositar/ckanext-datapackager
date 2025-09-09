@@ -2,7 +2,6 @@
 import json
 import pytest
 import responses
-from bs4 import BeautifulSoup
 import re
 
 import frictionless
@@ -74,18 +73,6 @@ class TestDataPackageController():
         assert linked_resource['url'] == resources[0].path
 
         assert uploaded_resource['url'] == resources[1].path
-
-    def test_that_download_button_is_on_page(self, app):
-        '''Tests that the download button is shown on the dataset pages.'''
-
-        dataset = factories.Dataset()
-
-        response = app.get('/dataset/{0}'.format(dataset['name']))
-        soup = BeautifulSoup(response.body)
-        download_button = soup.find(id='export_datapackage_button')
-        download_url = download_button['href']
-        assert download_url == toolkit.url_for('datapackager.export_datapackage',
-                                               package_id=dataset['id'])
 
     def test_new_renders(self, app, user_env):
         url = toolkit.url_for('datapackager.import_datapackage')
