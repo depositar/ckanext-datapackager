@@ -1,6 +1,8 @@
 import datetime
+import os
 
 from ckan import model
+from ckan.lib.plugins import DefaultTranslation
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 from flask import Blueprint
@@ -15,7 +17,7 @@ from ckanext.datapackager.logic.action.update import datapackage_update
 log = __import__('logging').getLogger(__name__)
 
 
-class DataPackagerPlugin(plugins.SingletonPlugin):
+class DataPackagerPlugin(plugins.SingletonPlugin, DefaultTranslation):
     '''Plugin that adds importing/exporting datasets as Data Packages.
     '''
     plugins.implements(plugins.IActions)
@@ -24,6 +26,7 @@ class DataPackagerPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IDomainObjectModification)
     plugins.implements(plugins.IPackageController, inherit=True)
     plugins.implements(plugins.ITemplateHelpers)
+    plugins.implements(plugins.ITranslation)
 
     def update_config(self, config):
         toolkit.add_template_directory(config, '../templates')
@@ -98,6 +101,9 @@ class DataPackagerPlugin(plugins.SingletonPlugin):
         return {
             'pop_datapackage_zip_res': helpers.pop_datapackage_zip_res,
         }
+
+    def i18n_directory(self):
+        return os.path.join(os.path.dirname(str(__file__)), '../i18n')
 
 
 def update_datapackage(package_id):

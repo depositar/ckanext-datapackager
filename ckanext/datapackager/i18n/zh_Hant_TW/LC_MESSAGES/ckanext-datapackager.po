@@ -1,0 +1,106 @@
+# Chinese (Traditional, Taiwan) translations for ckanext-datapackager.
+# Copyright (C) 2025 ORGANIZATION
+# This file is distributed under the same license as the
+# ckanext-datapackager
+# project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: ckanext-datapackager 1.1.0\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-09-09 11:47+0800\n"
+"PO-Revision-Date: 2025-09-09 11:29+0800\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: zh_Hant_TW\n"
+"Language-Team: zh_Hant_TW <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.15.0\n"
+
+#: ckanext/datapackager/controllers/datapackage.py:11
+msgid "Unauthorized to create a dataset"
+msgstr ""
+
+#: ckanext/datapackager/logic/action/update.py:14
+msgid "Missing id"
+msgstr "id 遺失"
+
+#: ckanext/datapackager/logic/action/update.py:21
+msgid "Not authorized to update the Data Package"
+msgstr "沒有權限更新 Data Package"
+
+#: ckanext/datapackager/logic/action/update.py:34
+msgid "Must be at least one resource with url"
+msgstr "必須至少有一個具有網址的資源"
+
+#: ckanext/datapackager/logic/action/update.py:42
+msgid "Only datasets with a total resource size of {0} MB or less are supported"
+msgstr "僅支援資源大小合計小於或等於 {} MB 的資料集"
+
+#: ckanext/datapackager/logic/action/update.py:57
+msgid ""
+"The Data Package doesn't need an update as its metadata and resources "
+"haven't changed: {}"
+msgstr "此 Data Package 無需更新，因為後設資料與資源均未變更：{}"
+
+#: ckanext/datapackager/templates/datapackage/import_datapackage.html:3
+#: ckanext/datapackager/templates/datapackage/import_datapackage.html:7
+#: ckanext/datapackager/templates/organization/read.html:8
+#: ckanext/datapackager/templates/package/search.html:8
+#: ckanext/datapackager/templates/user/dashboard_datasets.html:8
+msgid "Import Data Package"
+msgstr ""
+
+#: ckanext/datapackager/templates/datapackage/import_datapackage.html:6
+msgid "Datasets"
+msgstr ""
+
+#: ckanext/datapackager/templates/datapackage/import_datapackage.html:12
+msgid "What are Data Packages?"
+msgstr ""
+
+#: ckanext/datapackager/templates/datapackage/import_datapackage.html:15
+msgid ""
+"A <a href=\"https://frictionlessdata.io/data-packages/\">Data Package</a>"
+" is a simple container format used to describe and package a collection "
+"of data."
+msgstr ""
+
+#: ckanext/datapackager/templates/datapackage/import_datapackage.html:22
+msgid ""
+"You can import Data Packages to create CKAN datasets. The options "
+"supported are:"
+msgstr ""
+
+#: ckanext/datapackager/templates/datapackage/import_datapackage.html:25
+msgid ""
+"Upload or link to a Data Package descriptor (<i>datapackage.json</i> "
+"file) that references data files hosted elsewhere."
+msgstr ""
+
+#: ckanext/datapackager/templates/datapackage/import_datapackage.html:28
+msgid ""
+"Upload a zipped Data Package that includes the data files, plus a Data "
+"Package descriptor (<i>datapackage.json</i> file) in the root of the ZIP "
+"file."
+msgstr ""
+
+#: ckanext/datapackager/templates/datapackage/snippets/import_datapackage_basic_fields.html:4
+msgid "File"
+msgstr ""
+
+#: ckanext/datapackager/templates/datapackage/snippets/import_datapackage_basic_fields.html:4
+msgid "URL"
+msgstr ""
+
+#: ckanext/datapackager/templates/datapackage/snippets/import_datapackage_form.html:14
+msgid "Import"
+msgstr ""
+
+#: ckanext/datapackager/templates/package/read.html:10
+msgid "Download Data Package"
+msgstr "下載 Data Package"
+
