@@ -54,7 +54,7 @@ def mock_update_dp(mocker):
 class TestUpdate:
     @responses.activate
     def test_update_datapackage(self, app, create_with_upload, mock_update_dp):
-        responses.add_passthru('http://127.0.0.1:8983/solr')
+        responses.add_passthru(toolkit.config['solr_url'])
         content = 'hello world'
 
         dataset = factories.Dataset(
