@@ -10,6 +10,7 @@ import zipfile
 import pytest
 import responses
 
+from ckan.common import config
 import ckan.plugins.toolkit as toolkit
 import ckan.tests.factories as factories
 import ckan.tests.helpers as helpers
@@ -65,7 +66,8 @@ class TestUpdate:
         # Mocking download of resources
         responses.add(
             responses.GET,
-            re.compile(r'http://test.ckan.net/dataset/.*/download/.*'),
+            re.compile(r'{}/dataset/.*/download/.*'
+                       .format(config["ckan.site_url"])),
             body=content
         )
 
