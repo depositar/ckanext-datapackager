@@ -91,5 +91,10 @@ def get_api_token():
     return site_user['apikey']
 
 
+def get_site_url():
+    site_url = toolkit.config.get('ckanext.datapackager.site_url', None)
+    return site_url
+
+
 def generate_datapackage_json(dataset):
     return CkanPackage.from_dict(dataset).to_dp().to_dict()

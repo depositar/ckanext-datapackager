@@ -90,6 +90,18 @@ def _write_zip(fp, datapackage, ckan_and_datapackage_resources):
 
 
 def _download_resource_into_zip(url, filename, zipf):
+    # If the site_url differs from this url, rewrite this url to the
+    # site_url. This can be useful if CKAN is behind a firewall.
+    site_url = util.get_site_url()
+    if site_url and not url.startswith(site_url):
+        new_url = urlparse(url)
+        rewrite_url = urlparse(site_url)
+        new_url = new_url._replace(
+            scheme=rewrite_url.scheme,
+            netloc=rewrite_url.netloc)
+        url = new_url.geturl()
+        log.info('Rewrote resource url to: {0}'.format(url))
+
     try:
         headers = {'Authorization': util.get_api_token()}
         r = requests.get(url, headers=headers, stream=True)
