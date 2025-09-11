@@ -96,7 +96,6 @@ class TestUpdate:
             assert datapackage['licenses'][0]['name'] == 'cc-zero'
             assert {
                 'name': 'test',
-                'type': 'text',
                 'path': 'file.txt',
                 'ckan:id': uploaded_resource['id']
             }.items() <= datapackage['resources'][0].items()

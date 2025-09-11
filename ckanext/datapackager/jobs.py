@@ -1,11 +1,11 @@
 from datetime import datetime
+import json
 import os
 import tempfile
 from urllib.parse import urlparse
 import zipfile
 
 import ckanapi
-from frictionless import Package
 import requests
 
 from ckanext.datapackager.lib import util
@@ -127,8 +127,8 @@ def _download_resource_into_zip(url, filename, zipf):
 
 
 def _write_datapackage_json(datapackage, zipf):
-    with tempfile.NamedTemporaryFile() as json_file:
-        json_file.write(Package(datapackage).to_json().encode('utf-8'))
+    with tempfile.NamedTemporaryFile('w', encoding='utf-8') as json_file:
+        json_file.write(json.dumps(datapackage))
         json_file.flush()
         zipf.write(json_file.name, arcname='datapackage.json')
         log.debug('Added datapackage.json from {}'.format(json_file.name))
