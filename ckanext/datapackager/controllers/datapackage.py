@@ -91,5 +91,5 @@ def export_datapackage(package_id):
     except toolkit.ObjectNotFound:
         return toolkit.abort(404, 'Dataset not found')
 
-    r.data = json.dumps(datapackage_dict, indent=2)
+    r.data = json.dumps(datapackage_dict, indent=2, ensure_ascii=False)
     return r

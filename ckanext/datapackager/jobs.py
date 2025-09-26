@@ -128,7 +128,7 @@ def _download_resource_into_zip(url, filename, zipf):
 
 def _write_datapackage_json(datapackage, zipf):
     with tempfile.NamedTemporaryFile('w', encoding='utf-8') as json_file:
-        json_file.write(json.dumps(datapackage))
+        json_file.write(json.dumps(datapackage, ensure_ascii=False))
         json_file.flush()
         zipf.write(json_file.name, arcname='datapackage.json')
         log.debug('Added datapackage.json from {}'.format(json_file.name))
