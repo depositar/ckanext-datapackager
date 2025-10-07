@@ -4,6 +4,7 @@ from ckan import model
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 from flask import Blueprint
+from flask import has_request_context
 
 from ckanext.datapackager import helpers
 from ckanext.datapackager.controllers import datapackage
@@ -114,5 +115,11 @@ def update_datapackage(package_id):
             {'id': package_id}
         )
     except toolkit.ValidationError as e:
-        log.debug(e.error_dict.get('message', ''))
+        error_message = e.error_dict.get('message', '')
+
+        # Skip if the error occurs in background jobs
+        if has_request_context():
+            toolkit.h.flash_notice(error_message)
+
+        log.debug(error_message)
         return

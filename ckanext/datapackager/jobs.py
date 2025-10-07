@@ -18,7 +18,7 @@ class DownloadError(Exception):
     pass
 
 
-def dp_job(dataset, datapackage, existing_zip_resource):
+def update_zip(dataset, datapackage, existing_zip_resource):
     ckan_and_datapackage_resources = list(zip(dataset['resources'],
                                           datapackage['resources']))
 
@@ -54,6 +54,13 @@ def dp_job(dataset, datapackage, existing_zip_resource):
                 local_ckan.action.resource_patch(
                     id=existing_zip_resource['id'],
                     **resource)
+
+
+def delete_zip(dataset, existing_zip_resource):
+    local_ckan = ckanapi.LocalCKAN()
+
+    log.debug('Deleting zip resource - {}'.format(dataset['name']))
+    local_ckan.action.resource_delete(id=existing_zip_resource['id'])
 
 
 def _write_zip(fp, datapackage, ckan_and_datapackage_resources):
