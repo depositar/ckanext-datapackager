@@ -105,7 +105,7 @@ class DataPackagerPlugin(plugins.SingletonPlugin):
         # Prevent user from updating the Data Package
         if 'datapackage_metadata_modified' in current:
             raise toolkit.ValidationError(
-                {'message': toolkit._('Updating Data Package is not allowed')})
+                {'message': [toolkit._('Updating Data Package is not allowed')]})
 
         return
 
@@ -124,7 +124,7 @@ class DataPackagerPlugin(plugins.SingletonPlugin):
         if target_res and 'datapackage_metadata_modified' in target_res:
             error_message = toolkit._('Deleting Data Package is not allowed')
             if context.get('api_version'):
-                raise toolkit.ValidationError({'message': error_message})
+                raise toolkit.ValidationError({'message': [error_message]})
             else:
                 # Display the error page for the Web UI
                 toolkit.abort(409, detail=error_message)
