@@ -101,6 +101,15 @@ class TestUpdate:
             }.items() <= datapackage['resources'][0].items()
             assert datapackage['ckan:id'] == dataset['id']
 
+        # It should be able to update the non-Data Package resource
+        uploaded_resource['name'] = 'foo'
+        helpers.call_action('resource_update',
+                            id=uploaded_resource['id'],
+                            data_dict=uploaded_resource)
+
+        # It should be able to delete the non-Data Package resource
+        helpers.call_action('resource_delete', id=uploaded_resource['id'])
+
     def test_update_datapackage_with_missing_id(self):
         with pytest.raises(toolkit.ValidationError):
             helpers.call_action('datapackage_update')

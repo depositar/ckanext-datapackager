@@ -6,6 +6,7 @@ from ckan.lib.plugins import DefaultTranslation
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 from flask import Blueprint
+from flask import has_request_context
 
 from ckanext.datapackager import helpers
 from ckanext.datapackager.controllers import datapackage
@@ -24,6 +25,7 @@ class DataPackagerPlugin(plugins.SingletonPlugin, DefaultTranslation):
     plugins.implements(plugins.IBlueprint)
     plugins.implements(plugins.IDomainObjectModification)
     plugins.implements(plugins.IPackageController, inherit=True)
+    plugins.implements(plugins.IResourceController, inherit=True)
     plugins.implements(plugins.ITemplateHelpers)
     plugins.implements(plugins.ITranslation)
 
@@ -83,6 +85,41 @@ class DataPackagerPlugin(plugins.SingletonPlugin, DefaultTranslation):
             pass
         return pkg_dict
 
+    def before_resource_update(self, context, current, resource):
+        # Allow sysadmin to update the Data Package
+        user_obj = context.get('auth_user_obj')
+        if user_obj and user_obj.sysadmin:
+            return
+
+        # Prevent user from updating the Data Package
+        if 'datapackage_metadata_modified' in current:
+            raise toolkit.ValidationError(
+                {'message': toolkit._('Updating Data Package is not allowed')})
+
+        return
+
+    def before_resource_delete(self, context, resource, resources):
+        # Allow sysadmin to delete the Data Package
+        user_obj = context.get('auth_user_obj')
+        if user_obj and user_obj.sysadmin:
+            return
+
+        # Prevent user from deleting the Data Package
+        res_id_to_delete = resource.get('id')
+        target_res = next(
+            (r for r in resources if r.get('id') == res_id_to_delete),
+            None
+        )
+        if target_res and 'datapackage_metadata_modified' in target_res:
+            error_message = toolkit._('Deleting Data Package is not allowed')
+            if context.get('api_version'):
+                raise toolkit.ValidationError({'message': error_message})
+            else:
+                # Display the error page for the Web UI
+                toolkit.abort(409, detail=error_message)
+
+        return
+
     def get_helpers(self):
         return {
             'pop_datapackage_zip_res': helpers.pop_datapackage_zip_res,
@@ -106,5 +143,11 @@ def update_datapackage(package_id):
             {'id': package_id}
         )
     except toolkit.ValidationError as e:
-        log.debug(e.error_dict.get('message', ''))
+        error_message = e.error_dict.get('message', '')
+
+        # Skip if the error occurs in background jobs
+        if has_request_context():
+            toolkit.h.flash_notice(error_message)
+
+        log.debug(error_message)
         return

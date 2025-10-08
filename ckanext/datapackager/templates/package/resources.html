@@ -1,0 +1,7 @@
+{% ckan_extends %}
+
+{% block primary_content_inner %}
+  {# Hide the Data Package zip resource from the list of resources. #}
+  {% set zip_res = h.pop_datapackage_zip_res(pkg) %}
+  {{ super() }}
+{% endblock %}

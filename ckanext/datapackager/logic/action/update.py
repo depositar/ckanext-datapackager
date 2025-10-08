@@ -30,17 +30,28 @@ def datapackage_update(context, data_dict):
             dataset_dict)
 
     if not resources_to_include:
+        if existing_zip_resource:
+            toolkit.enqueue_job(jobs.delete_zip,
+                                [dataset, existing_zip_resource])
         raise toolkit.ValidationError(
-            {'message': toolkit._('Must be at least one resource with url')})
+            {'message': toolkit._('Data Package: At least one resource '
+                                  'with URL is required to create a Data '
+                                  'Package. The Data Package will be '
+                                  'deleted if it exists.')})
 
     # Check if the total resource size is over the limit
     total_size_of_resources = sum(res['size'] for res in resources_to_include
                                   if res['size'] is not None)
     max_size = util.get_max_dataset_size()
     if total_size_of_resources > max_size * 1 << 20:
+        if existing_zip_resource:
+            toolkit.enqueue_job(jobs.delete_zip,
+                                [dataset, existing_zip_resource])
         raise toolkit.ValidationError(
-            {'message': toolkit._('Only datasets with a total resource size '
-                                  'of {0} MB or less are supported')
+            {'message': toolkit._('Data Package: Only datasets with a total '
+                                  'resource size of {0} MB or less are '
+                                  'supported to create a Data Package. The '
+                                  'Data Package will be deleted if it exists.')
                                .format(max_size)})
 
     datapackage = util.generate_datapackage_json(dataset)
@@ -59,5 +70,5 @@ def datapackage_update(context, data_dict):
                                       "haven't changed: {}")
                                    .format(dataset_dict['name'])})
 
-    toolkit.enqueue_job(jobs.dp_job,
+    toolkit.enqueue_job(jobs.update_zip,
                         [dataset, datapackage, existing_zip_resource])
