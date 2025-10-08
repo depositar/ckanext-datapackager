@@ -24,6 +24,7 @@ class DataPackagerPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IBlueprint)
     plugins.implements(plugins.IDomainObjectModification)
     plugins.implements(plugins.IPackageController, inherit=True)
+    plugins.implements(plugins.IResourceController, inherit=True)
     plugins.implements(plugins.ITemplateHelpers)
 
     def update_config(self, config):
@@ -94,6 +95,41 @@ class DataPackagerPlugin(plugins.SingletonPlugin):
             # This happens when you save a new package without a resource yet
             pass
         return pkg_dict
+
+    def before_resource_update(self, context, current, resource):
+        # Allow sysadmin to update the Data Package
+        user_obj = context.get('auth_user_obj')
+        if user_obj and user_obj.sysadmin:
+            return
+
+        # Prevent user from updating the Data Package
+        if 'datapackage_metadata_modified' in current:
+            raise toolkit.ValidationError(
+                {'message': toolkit._('Updating Data Package is not allowed')})
+
+        return
+
+    def before_resource_delete(self, context, resource, resources):
+        # Allow sysadmin to delete the Data Package
+        user_obj = context.get('auth_user_obj')
+        if user_obj and user_obj.sysadmin:
+            return
+
+        # Prevent user from deleting the Data Package
+        res_id_to_delete = resource.get('id')
+        target_res = next(
+            (r for r in resources if r.get('id') == res_id_to_delete),
+            None
+        )
+        if target_res and 'datapackage_metadata_modified' in target_res:
+            error_message = toolkit._('Deleting Data Package is not allowed')
+            if context.get('api_version'):
+                raise toolkit.ValidationError({'message': error_message})
+            else:
+                # Display the error page for the Web UI
+                toolkit.abort(409, detail=error_message)
+
+        return
 
     def get_helpers(self):
         return {
