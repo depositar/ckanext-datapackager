@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ckanext-datapackager 1.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-09-09 11:47+0800\n"
+"POT-Creation-Date: 2025-10-08 13:48+0800\n"
 "PO-Revision-Date: 2025-09-09 11:29+0800\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: zh_Hant_TW\n"
@@ -32,25 +32,35 @@ msgstr "id 遺失"
 msgid "Not authorized to update the Data Package"
 msgstr "沒有權限更新 Data Package"
 
-#: ckanext/datapackager/logic/action/update.py:34
-msgid "Must be at least one resource with url"
-msgstr "必須至少有一個具有網址的資源"
+#: ckanext/datapackager/logic/action/update.py:37
+msgid ""
+"Data Package: At least one resource with URL is required to create a Data"
+" Package. The Data Package will be deleted if it exists."
+msgstr "Data Package: 必須至少有一個具有網址的資源以建立 Data Package，已存在的 Data Package 將被刪除"
 
-#: ckanext/datapackager/logic/action/update.py:42
-msgid "Only datasets with a total resource size of {0} MB or less are supported"
-msgstr "僅支援資源大小合計小於或等於 {} MB 的資料集"
+#: ckanext/datapackager/logic/action/update.py:51
+msgid ""
+"Data Package: Only datasets with a total resource size of {0} MB or less "
+"are supported to create a Data Package. The Data Package will be deleted "
+"if it exists."
+msgstr "Data Package: 僅資源大小合計小於或等於 {} MB 的資料集可建立 Data Package，已存在的 Data Package 將被刪除"
 
-#: ckanext/datapackager/logic/action/update.py:57
+#: ckanext/datapackager/logic/action/update.py:68
 msgid ""
 "The Data Package doesn't need an update as its metadata and resources "
 "haven't changed: {}"
 msgstr "此 Data Package 無需更新，因為後設資料與資源均未變更：{}"
 
+#: ckanext/datapackager/plugin/__init__.py:97
+msgid "Updating Data Package is not allowed"
+msgstr "禁止更新 Data Package"
+
+#: ckanext/datapackager/plugin/__init__.py:114
+msgid "Deleting Data Package is not allowed"
+msgstr "禁止刪除 Data Package"
+
 #: ckanext/datapackager/templates/datapackage/import_datapackage.html:3
 #: ckanext/datapackager/templates/datapackage/import_datapackage.html:7
-#: ckanext/datapackager/templates/organization/read.html:8
-#: ckanext/datapackager/templates/package/search.html:8
-#: ckanext/datapackager/templates/user/dashboard_datasets.html:8
 msgid "Import Data Package"
 msgstr ""
 

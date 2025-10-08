@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ckanext-datapackager 1.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-09-09 11:47+0800\n"
+"POT-Creation-Date: 2025-10-08 13:48+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -30,25 +30,35 @@ msgstr ""
 msgid "Not authorized to update the Data Package"
 msgstr ""
 
-#: ckanext/datapackager/logic/action/update.py:34
-msgid "Must be at least one resource with url"
+#: ckanext/datapackager/logic/action/update.py:37
+msgid ""
+"Data Package: At least one resource with URL is required to create a Data "
+"Package. The Data Package will be deleted if it exists."
 msgstr ""
 
-#: ckanext/datapackager/logic/action/update.py:42
-msgid "Only datasets with a total resource size of {0} MB or less are supported"
+#: ckanext/datapackager/logic/action/update.py:51
+msgid ""
+"Data Package: Only datasets with a total resource size of {0} MB or less are "
+"supported to create a Data Package. The Data Package will be deleted if it "
+"exists."
 msgstr ""
 
-#: ckanext/datapackager/logic/action/update.py:57
+#: ckanext/datapackager/logic/action/update.py:68
 msgid ""
 "The Data Package doesn't need an update as its metadata and resources haven't"
 " changed: {}"
 msgstr ""
 
+#: ckanext/datapackager/plugin/__init__.py:97
+msgid "Updating Data Package is not allowed"
+msgstr ""
+
+#: ckanext/datapackager/plugin/__init__.py:114
+msgid "Deleting Data Package is not allowed"
+msgstr ""
+
 #: ckanext/datapackager/templates/datapackage/import_datapackage.html:3
 #: ckanext/datapackager/templates/datapackage/import_datapackage.html:7
-#: ckanext/datapackager/templates/organization/read.html:8
-#: ckanext/datapackager/templates/package/search.html:8
-#: ckanext/datapackager/templates/user/dashboard_datasets.html:8
 msgid "Import Data Package"
 msgstr ""
 
