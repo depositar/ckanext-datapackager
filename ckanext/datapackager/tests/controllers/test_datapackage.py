@@ -142,4 +142,4 @@ class TestDataPackageController():
             headers=user_env,
             follow_redirects=False
         )
-        assert re.search('resources.*?is a required property', response.text)
+        assert re.search('resources.*?is a required property', response.body)
