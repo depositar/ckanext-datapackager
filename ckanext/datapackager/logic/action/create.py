@@ -4,10 +4,11 @@ import os
 
 import ckan.plugins.toolkit as toolkit
 from dplib.models import Package
-from dplib.plugins.ckan.models import CkanPackage
 from frictionless import Package as fl_package
 from frictionless import FrictionlessException
 from werkzeug.datastructures import FileStorage
+
+from ckanext.datapackager.lib import util
 
 
 def package_create_from_datapackage(context, data_dict):
@@ -39,8 +40,12 @@ def package_create_from_datapackage(context, data_dict):
         raise toolkit.ValidationError(msg)
 
     dp = _load_and_validate_datapackage(url=url, upload=upload)
-    dataset_dict = CkanPackage.from_dp(
-        Package.from_dict(dp.to_dict())).to_dict()
+
+    # Export the descriptor of DP from frictionless-py to dplib-py
+    dplib_dp = Package.from_dict(dp.to_dict())
+
+    # Convert the Data Package to the CKAN dataset
+    dataset_dict = util.create_dataset_from_datapackage(dplib_dp)
 
     owner_org = data_dict.get('owner_org')
     if owner_org:
@@ -67,7 +72,7 @@ def package_create_from_datapackage(context, data_dict):
 
     if resources:
         try:
-            _create_resources(dataset_id, context, resources)
+            _create_resources(dataset_id, context, resources, dp.resources)
             res = toolkit.get_action('package_show')(
                 context, {'id': dataset_id})
         except Exception as e:
@@ -92,6 +97,8 @@ def _load_and_validate_datapackage(url=None, upload=None):
             ext = os.path.splitext(upload.filename)[1]
             with tempfile.NamedTemporaryFile(suffix=ext) as f:
                 upload.save(f.name)
+                # Use frictionless-py to read the zipped Data Package
+                # and access the resouce file
                 dp = fl_package(f.name)
         else:
             dp = fl_package(url)
@@ -125,24 +132,23 @@ def _package_create_with_unique_name(context, dataset_dict, name=None):
     return res
 
 
-def _create_resources(dataset_id, context, resources):
+def _create_resources(dataset_id, context, resources, dp_resources):
     for resource in resources:
         resource['package_id'] = dataset_id
-        if resource.get('path'):
-            _create_and_upload_local_resource(context, resource)
-        else:
-            toolkit.get_action('resource_create')(context, resource)
+        for dp_res in dp_resources:
+            if dp_res.path != resource['url']:
+                continue
+            if dp_res.scheme == 'file':
+                _create_and_upload_local_resource(context, resource, dp_res)
+            else:
+                toolkit.get_action('resource_create')(context, resource)
 
 
-def _create_and_upload_local_resource(context, resource):
-    path = resource['path']
-    del resource['path']
-    if isinstance(path, list):
-        path = path[0]
+def _create_and_upload_local_resource(context, resource, dp_resource):
     try:
-        with open(path, 'r') as f:
-            _create_and_upload_resource(context, resource, f)
-    except IOError:
+        with dp_resource.open() as f:
+            _create_and_upload_resource(context, resource, f.byte_stream)
+    except FrictionlessException:
         msg = {'datapackage': [(
             "Couldn't create some of the resources."
             " Please make sure that all resources' files are accessible."

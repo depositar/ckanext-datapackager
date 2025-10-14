@@ -3,6 +3,8 @@
 '''
 import os.path
 
+from dplib.plugins.ckan.models import CkanPackage
+
 import ckanext.datapackager.exceptions as exceptions
 
 
@@ -34,3 +36,7 @@ def get_path_to_resource_file(resource_dict):
         raise exceptions.ResourceFileDoesNotExistException
 
     return path
+
+
+def create_dataset_from_datapackage(dp):
+    return CkanPackage.from_dp(dp).to_dict()
