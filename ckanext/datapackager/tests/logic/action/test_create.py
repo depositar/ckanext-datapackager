@@ -93,43 +93,41 @@ class TestPackageCreateFromDataPackage():
 
         helpers.call_action('package_show', id=datapackage['name'])
 
-    # TODO: Fix tests with zipped files on CKAN 2.9
-    #def test_it_deletes_dataset_on_error_when_creating_resources(self):
-    #    datapkg_path = custom_helpers.fixture_path(
-    #        'datetimes-datapackage-with-inexistent-resource.zip'
-    #    )
+    @responses.activate
+    def test_it_deletes_dataset_on_error_when_creating_resources(self):
+        responses.add_passthru(toolkit.config['solr_url'])
+        url = 'http://www.example.com/datapackage.zip'
+        datapkg_path = custom_helpers.fixture_path(
+            'datetimes-datapackage-with-inexistent-resource.zip'
+        )
 
-    #    original_datasets = helpers.call_action('package_list')
+        original_datasets = helpers.call_action('package_list')
 
-    #    with open(datapkg_path, 'rb') as datapkg:
-    #
-    #        with pytest.raises(toolkit.ValidationError):
-    #            helpers.call_action('package_create_from_datapackage',
-    #                upload=_UploadFile(datapkg))
+        with open(datapkg_path, 'rb') as f:
+            responses.add(responses.GET, url,
+                          content_type='application/zip', body=f.read())
+            with pytest.raises(toolkit.ValidationError):
+                helpers.call_action('package_create_from_datapackage', url=url)
 
-    #    new_datasets = helpers.call_action('package_list')
-    #    assert original_datasets == new_datasets
+        new_datasets = helpers.call_action('package_list')
+        assert original_datasets == new_datasets
 
-    # TODO: Fix tests with zipped files on CKAN 2.9
-    #@responses.activate
-    #def test_it_uploads_local_files(self):
-    #    url = 'http://www.example.com/datapackage.zip'
-    #    datapkg_path = custom_helpers.fixture_path('datetimes-datapackage.zip')
-    #    with open(datapkg_path, 'rb') as f:
-    #        responses.add(responses.GET, url, content_type='application/zip', body=f.read())
+    @responses.activate
+    def test_it_uploads_local_files(self):
+        responses.add_passthru(toolkit.config['solr_url'])
+        url = 'http://www.example.com/datapackage.zip'
+        datapkg_path = custom_helpers.fixture_path('datetimes-datapackage.zip')
+        with open(datapkg_path, 'rb') as f:
+            responses.add(responses.GET, url,
+                          content_type='application/zip', body=f.read())
 
-    #    # FIXME: Remove this when
-    #    # https://github.com/okfn/datapackage-py/issues/20 is done
-    #    timezones_url = 'https://www.example.com/timezones.csv'
-    #    responses.add(responses.GET, timezones_url, body='')
+        helpers.call_action('package_create_from_datapackage', url=url)
 
-    #    helpers.call_action('package_create_from_datapackage', url=url)
+        dataset = helpers.call_action('package_show', id='datetimes')
+        resources = dataset.get('resources')
 
-    #    dataset = helpers.call_action('package_show', id='datetimes')
-    #    resources = dataset.get('resources')
-
-    #    assert resources[0]['url_type'] == 'upload'
-    #    assert re.match('datetimes.csv$', resources[0]['url'])
+        assert resources[0]['url_type'] == 'upload'
+        assert re.search(r'datetimes\.csv', resources[0]['url'])
 
     @responses.activate
     def test_it_allows_specifying_the_dataset_name(self):
@@ -223,10 +221,3 @@ class TestPackageCreateFromDataPackage():
         dataset = helpers.call_action('package_create_from_datapackage',
                                       upload=upload)
         assert dataset['name'] == 'foo'
-
-
-class _UploadFile(object):
-    '''Mock the parts from cgi.FileStorage we use.'''
-
-    def __init__(self, fp):
-        self.file = fp

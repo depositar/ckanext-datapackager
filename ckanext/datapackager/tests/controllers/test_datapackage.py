@@ -116,3 +116,17 @@ class TestDataPackageController():
         assert len(dataset.get('resources', [])) == 1
         assert dataset['resources'][0].get('name') == 'data.csv'
         assert (dataset['resources'][0].get('url') == datapackage['resources'][0]['path'])
+
+    @responses.activate
+    def test_import_invalid_datapackage(self, app, user_env):
+        datapackage_url = 'http://www.foo.com/datapackage.json'
+        datapackage = {'name': 'foo'}
+        responses.add('GET', datapackage_url, json=datapackage)
+
+        url = toolkit.url_for('datapackager.import_datapackage', url=datapackage_url)
+        response = app.post(
+            url,
+            headers=user_env,
+            follow_redirects=False
+        )
+        assert re.search('resources.*?is a required property', response.body)

@@ -96,5 +96,9 @@ def get_site_url():
     return site_url
 
 
+def create_dataset_from_datapackage(dp):
+    return CkanPackage.from_dp(dp).to_dict()
+
+
 def generate_datapackage_json(dataset):
     return CkanPackage.from_dict(dataset).to_dp().to_dict()
