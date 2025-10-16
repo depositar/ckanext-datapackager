@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ckanext-datapackager 1.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-10-08 13:48+0800\n"
+"POT-Creation-Date: 2025-10-15 10:10+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -49,16 +49,19 @@ msgid ""
 " changed: {}"
 msgstr ""
 
-#: ckanext/datapackager/plugin/__init__.py:97
+#: ckanext/datapackager/plugin/__init__.py:111
 msgid "Updating Data Package is not allowed"
 msgstr ""
 
-#: ckanext/datapackager/plugin/__init__.py:114
+#: ckanext/datapackager/plugin/__init__.py:128
 msgid "Deleting Data Package is not allowed"
 msgstr ""
 
 #: ckanext/datapackager/templates/datapackage/import_datapackage.html:3
 #: ckanext/datapackager/templates/datapackage/import_datapackage.html:7
+#: ckanext/datapackager/templates/organization/read.html:8
+#: ckanext/datapackager/templates/package/search.html:8
+#: ckanext/datapackager/templates/user/dashboard_datasets.html:8
 msgid "Import Data Package"
 msgstr ""
 
@@ -72,7 +75,7 @@ msgstr ""
 
 #: ckanext/datapackager/templates/datapackage/import_datapackage.html:15
 msgid ""
-"A <a href=\"https://frictionlessdata.io/data-packages/\">Data Package</a> is "
+"A <a href=\"https://datapackage.org/\" target=\"_blank\">Data Package</a> is "
 "a simple container format used to describe and package a collection of data."
 msgstr ""
 

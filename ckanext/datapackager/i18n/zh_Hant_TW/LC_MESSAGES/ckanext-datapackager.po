@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ckanext-datapackager 1.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-10-08 13:48+0800\n"
+"POT-Creation-Date: 2025-10-15 10:10+0800\n"
 "PO-Revision-Date: 2025-09-09 11:29+0800\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: zh_Hant_TW\n"
@@ -43,7 +43,9 @@ msgid ""
 "Data Package: Only datasets with a total resource size of {0} MB or less "
 "are supported to create a Data Package. The Data Package will be deleted "
 "if it exists."
-msgstr "Data Package: 僅資源大小合計小於或等於 {} MB 的資料集可建立 Data Package，已存在的 Data Package 將被刪除"
+msgstr ""
+"Data Package: 僅資源大小合計小於或等於 {} MB 的資料集可建立 Data Package，已存在的 Data Package "
+"將被刪除"
 
 #: ckanext/datapackager/logic/action/update.py:68
 msgid ""
@@ -51,18 +53,21 @@ msgid ""
 "haven't changed: {}"
 msgstr "此 Data Package 無需更新，因為後設資料與資源均未變更：{}"
 
-#: ckanext/datapackager/plugin/__init__.py:97
+#: ckanext/datapackager/plugin/__init__.py:111
 msgid "Updating Data Package is not allowed"
 msgstr "禁止更新 Data Package"
 
-#: ckanext/datapackager/plugin/__init__.py:114
+#: ckanext/datapackager/plugin/__init__.py:128
 msgid "Deleting Data Package is not allowed"
 msgstr "禁止刪除 Data Package"
 
 #: ckanext/datapackager/templates/datapackage/import_datapackage.html:3
 #: ckanext/datapackager/templates/datapackage/import_datapackage.html:7
+#: ckanext/datapackager/templates/organization/read.html:8
+#: ckanext/datapackager/templates/package/search.html:8
+#: ckanext/datapackager/templates/user/dashboard_datasets.html:8
 msgid "Import Data Package"
-msgstr ""
+msgstr "匯入 Data Package"
 
 #: ckanext/datapackager/templates/datapackage/import_datapackage.html:6
 msgid "Datasets"
@@ -70,33 +75,35 @@ msgstr ""
 
 #: ckanext/datapackager/templates/datapackage/import_datapackage.html:12
 msgid "What are Data Packages?"
-msgstr ""
+msgstr "Data Packages 是什麼？"
 
 #: ckanext/datapackager/templates/datapackage/import_datapackage.html:15
 msgid ""
-"A <a href=\"https://frictionlessdata.io/data-packages/\">Data Package</a>"
+"A <a href=\"https://datapackage.org/\" target=\"_blank\">Data Package</a>"
 " is a simple container format used to describe and package a collection "
 "of data."
-msgstr ""
+msgstr "<a href=\"https://datapackage.org/\" target=\"_blank\">Data Package</a>"
+" 是一種簡單的容器格式，可用來描述與封裝一批資料。"
 
 #: ckanext/datapackager/templates/datapackage/import_datapackage.html:22
 msgid ""
 "You can import Data Packages to create CKAN datasets. The options "
 "supported are:"
-msgstr ""
+msgstr "您可以匯入 Data Packages 以建立 CKAN 資料集。支援以下方式："
 
 #: ckanext/datapackager/templates/datapackage/import_datapackage.html:25
 msgid ""
 "Upload or link to a Data Package descriptor (<i>datapackage.json</i> "
 "file) that references data files hosted elsewhere."
-msgstr ""
+msgstr "上傳或連結到位於他處的 Data Package 描述檔（<i>datapackage.json</i> 檔案）"
 
 #: ckanext/datapackager/templates/datapackage/import_datapackage.html:28
 msgid ""
 "Upload a zipped Data Package that includes the data files, plus a Data "
 "Package descriptor (<i>datapackage.json</i> file) in the root of the ZIP "
 "file."
-msgstr ""
+msgstr "上傳 Data Package ZIP 壓縮檔，包含資料檔案以及 Data "
+"Package 描述檔（<i>datapackage.json</i> 檔案，置於壓縮檔根目錄）"
 
 #: ckanext/datapackager/templates/datapackage/snippets/import_datapackage_basic_fields.html:4
 msgid "File"
@@ -108,7 +115,7 @@ msgstr ""
 
 #: ckanext/datapackager/templates/datapackage/snippets/import_datapackage_form.html:14
 msgid "Import"
-msgstr ""
+msgstr "匯入"
 
 #: ckanext/datapackager/templates/package/read.html:10
 msgid "Download Data Package"
