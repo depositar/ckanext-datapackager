@@ -145,9 +145,12 @@ def _create_resources(dataset_id, context, resources, dp_resources):
 
 
 def _create_and_upload_local_resource(context, resource, dp_resource):
+    context_ = context.copy()
+    # Flag to skip redundant updates during uploads
+    context_['dp_upload_local'] = True
     try:
         with dp_resource.open() as f:
-            _create_and_upload_resource(context, resource, f.byte_stream)
+            _create_and_upload_resource(context_, resource, f.byte_stream)
     except FrictionlessException:
         msg = {'datapackage': [(
             "Couldn't create some of the resources."

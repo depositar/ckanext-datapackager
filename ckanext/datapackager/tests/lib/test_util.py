@@ -21,6 +21,7 @@ class TestResourceSchemaFieldCreate(unittest.TestCase):
         package = factories.Dataset(user=user)
         csv_file = FileStorage(custom_helpers.get_csv_file('datetimes.csv'))
         resource = helpers.call_action('resource_create', {},
+            name='datetimes.csv',
             package_id=package['id'],
             upload=csv_file,
             url=''  # FIXME: See https://github.com/ckan/ckan/issues/2769
