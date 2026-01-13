@@ -3,6 +3,7 @@ import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 from flask import Blueprint
 from flask import has_request_context
+from flask import session
 
 from ckanext.datapackager import helpers
 from ckanext.datapackager.controllers import datapackage
@@ -131,7 +132,7 @@ def _update_datapackage(package_id, context):
     except toolkit.ValidationError as e:
         error_message = e.error_dict.get('message', '')
 
-        if has_request_context():
+        if has_request_context() and session:
             toolkit.h.flash_notice(error_message)
 
         return
