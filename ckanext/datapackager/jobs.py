@@ -28,7 +28,9 @@ def update_zip(dataset, datapackage, existing_zip_resource):
             datapackage, dataset['resources'])
 
     with tempfile.TemporaryDirectory() as temp_dir:
-        zip_path = os.path.join(temp_dir, 'datapackage.zip')
+        filename = datetime.now().strftime(
+            "datapackage_%Y-%m-%d_%H-%M-%S_{}.zip".format(dataset['name']))
+        zip_path = os.path.join(temp_dir, filename)
 
         _write_zip(zip_path, datapackage, ckan_and_datapackage_resources)
 
