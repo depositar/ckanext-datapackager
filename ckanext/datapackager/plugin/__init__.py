@@ -1,5 +1,3 @@
-import datetime
-
 from ckan import model
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
@@ -13,16 +11,12 @@ from ckanext.datapackager.logic.action.get import package_show_as_datapackage
 from ckanext.datapackager.logic.action.update import datapackage_update
 
 
-log = __import__('logging').getLogger(__name__)
-
-
 class DataPackagerPlugin(plugins.SingletonPlugin):
     '''Plugin that adds importing/exporting datasets as Data Packages.
     '''
     plugins.implements(plugins.IActions)
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.IBlueprint)
-    plugins.implements(plugins.IDomainObjectModification)
     plugins.implements(plugins.IPackageController, inherit=True)
     plugins.implements(plugins.IResourceController, inherit=True)
     plugins.implements(plugins.ITemplateHelpers)
@@ -59,31 +53,6 @@ class DataPackagerPlugin(plugins.SingletonPlugin):
             methods=["GET"],
         )
         return blueprint
-
-    # A dictionary to store processed dataset ids and timestamps
-    _processed_packages = {}
-
-    def notify(self, entity, operation):
-        # Only handle the events for datasets
-        if not isinstance(entity, model.Package):
-            return
-
-        # Skip if there is no resources in the dataset
-        # E.g. the first step in dataset creation
-        if operation == 'changed' and entity.resources:
-            # Skip if the dataset is going to be deleted
-            if entity.state == 'deleted':
-                return
-            if entity.id in self._processed_packages:
-                last_processed = self._processed_packages[entity.id]
-                # If processed within the last second, ignore this event
-                if (datetime.datetime.now() - last_processed).seconds < 1:
-                    return
-
-            update_datapackage(entity.id)
-
-            # Record the current time to prevent duplicate events
-            self._processed_packages[entity.id] = datetime.datetime.now()
 
     def before_dataset_index(self, pkg_dict):
         try:
@@ -131,31 +100,38 @@ class DataPackagerPlugin(plugins.SingletonPlugin):
 
         return
 
+    def after_dataset_update(self, context, pkg_dict):
+        _update_datapackage(pkg_dict.get('id'), context)
+
+    def after_resource_create(self, context, resource):
+        _update_datapackage(resource.get('package_id'), context)
+
+    def after_resource_update(self, context, resource):
+        _update_datapackage(resource.get('package_id'), context)
+
     def get_helpers(self):
         return {
             'pop_datapackage_zip_res': helpers.pop_datapackage_zip_res,
         }
 
 
-def update_datapackage(package_id):
-    context = {
-        'model': model,
-        'session': model.Session,
-        'ignore_auth': True
-    }
+def _update_datapackage(package_id, context):
+    # Skip redundant hook-triggered updates
+    if context.get('dp_upload_local') or context.get('dp_update_processed'):
+        return
+
+    context['dp_update_processed'] = True
 
     try:
         toolkit.get_action(
             'datapackage_update')(
-            context,
+            {'model': model, 'session': model.Session, 'ignore_auth': True},
             {'id': package_id}
         )
     except toolkit.ValidationError as e:
         error_message = e.error_dict.get('message', '')
 
-        # Skip if the error occurs in background jobs
         if has_request_context():
             toolkit.h.flash_notice(error_message)
 
-        log.debug(error_message)
         return

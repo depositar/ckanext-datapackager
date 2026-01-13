@@ -11,6 +11,7 @@ import pytest
 import responses
 
 from ckan.common import config
+import ckan.logic as logic
 import ckan.plugins.toolkit as toolkit
 import ckan.tests.factories as factories
 import ckan.tests.helpers as helpers
@@ -18,33 +19,28 @@ import ckan.tests.helpers as helpers
 
 @pytest.fixture
 def mock_update_dp(mocker):
-    dp_zip_file = None
+    dp_zip = mocker.Mock()
+    original_create = logic._actions['resource_create']
 
-    def synchronous_enqueue_job(job_func, args=None, kwargs=None, title=None):
-        '''
-        Synchronous mock for ``ckan.plugins.toolkit.enqueue_job``.
-        '''
-        args = args or []
-        kwargs = kwargs or {}
-        job_func(*args, **kwargs)
-
-    def capture_upload(*args, **kwargs):
-        nonlocal dp_zip_file
-        upload_file = kwargs.get('files')['upload']
-        dp_zip_file = BytesIO(upload_file.read())
+    def capture_upload(context, data_dict):
+        # If this is the action in the update_zip job
+        if context.get('dp_update_processed'):
+            upload_file = data_dict.get('upload')
+            dp_zip.file = BytesIO(upload_file.read())
+            return
+        # Or return the action handling the file upload
+        return original_create(context, data_dict)
 
     mocker.patch(
         'ckan.plugins.toolkit.enqueue_job',
-        side_effect=synchronous_enqueue_job
-    )
-    mocker.patch(
-        'ckanapi.localckan.LocalCKAN.call_action',
-        side_effect=capture_upload
+        side_effect=lambda f, args=[], kwargs={}: f(*args, **kwargs)
     )
 
+    mocker.patch.dict(logic._actions, {'resource_create': capture_upload})
+
     def get_file():
-        dp_zip_file.seek(0)
-        return dp_zip_file
+        dp_zip.file.seek(0)
+        return dp_zip.file
 
     yield get_file
 

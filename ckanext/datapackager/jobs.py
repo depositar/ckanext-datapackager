@@ -5,8 +5,9 @@ import tempfile
 from urllib.parse import urlparse
 import zipfile
 
-import ckanapi
 import requests
+import ckan.plugins.toolkit as toolkit
+from werkzeug.datastructures import FileStorage
 
 from ckanext.datapackager.lib import util
 
@@ -32,13 +33,17 @@ def update_zip(dataset, datapackage, existing_zip_resource):
         _write_zip(zip_path, datapackage, ckan_and_datapackage_resources)
 
         # Upload the resource to CKAN as a new/updated resource
-        local_ckan = ckanapi.LocalCKAN()
+        site_user = toolkit.get_action('get_site_user')({'ignore_auth': True}, {})
+        context = {
+            'ignore_auth': True,
+            'user': site_user['name'],
+            'dp_update_processed': True
+        }
 
         with open(zip_path, 'rb') as f:
             resource = dict(
                 package_id=dataset['id'],
-                url='dummy-value',
-                upload=f,
+                upload=FileStorage(f, os.path.basename(zip_path)),
                 name='Data Package',
                 format='ZIP',
                 datapackage_metadata_modified=dataset['metadata_modified'],
@@ -48,19 +53,24 @@ def update_zip(dataset, datapackage, existing_zip_resource):
             if not existing_zip_resource:
                 log.debug('Writing new zip resource - {}'
                           .format(dataset['name']))
-                local_ckan.action.resource_create(**resource)
+                toolkit.get_action('resource_create')(context, resource)
             else:
                 log.debug('Updating zip resource - {}'.format(dataset['name']))
-                local_ckan.action.resource_patch(
-                    id=existing_zip_resource['id'],
-                    **resource)
+                resource['id'] = existing_zip_resource['id']
+                toolkit.get_action('resource_patch')(context, resource)
 
 
 def delete_zip(dataset, existing_zip_resource):
-    local_ckan = ckanapi.LocalCKAN()
+    site_user = toolkit.get_action('get_site_user')({'ignore_auth': True}, {})
+    context = {
+        'ignore_auth': True,
+        'user': site_user['name'],
+        'dp_update_processed': True
+    }
 
     log.debug('Deleting zip resource - {}'.format(dataset['name']))
-    local_ckan.action.resource_delete(id=existing_zip_resource['id'])
+    toolkit.get_action('resource_delete')(context,
+                                          {'id': existing_zip_resource['id']})
 
 
 def _write_zip(fp, datapackage, ckan_and_datapackage_resources):
