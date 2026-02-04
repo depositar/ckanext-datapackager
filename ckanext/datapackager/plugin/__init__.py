@@ -68,8 +68,7 @@ class DataPackagerPlugin(plugins.SingletonPlugin):
 
     def before_resource_update(self, context, current, resource):
         # Allow sysadmin to update the Data Package
-        user_obj = context.get('auth_user_obj')
-        if user_obj and user_obj.sysadmin:
+        if _is_sysadmin(context):
             return
 
         # Prevent user from updating the Data Package
@@ -81,8 +80,7 @@ class DataPackagerPlugin(plugins.SingletonPlugin):
 
     def before_resource_delete(self, context, resource, resources):
         # Allow sysadmin to delete the Data Package
-        user_obj = context.get('auth_user_obj')
-        if user_obj and user_obj.sysadmin:
+        if _is_sysadmin(context):
             return
 
         # Prevent user from deleting the Data Package
@@ -114,6 +112,14 @@ class DataPackagerPlugin(plugins.SingletonPlugin):
         return {
             'pop_datapackage_zip_res': helpers.pop_datapackage_zip_res,
         }
+
+
+def _is_sysadmin(context):
+    try:
+        toolkit.check_access('sysadmin', context, {})
+        return True
+    except toolkit.NotAuthorized:
+        return False
 
 
 def _update_datapackage(package_id, context):
