@@ -19,7 +19,23 @@ class DownloadError(Exception):
     pass
 
 
-def update_zip(dataset, datapackage, existing_zip_resource):
+def update_zip(dataset_id, datapackage):
+    site_user = toolkit.get_action('get_site_user')({'ignore_auth': True}, {})
+    context = {
+        'ignore_auth': True,
+        'user': site_user['name'],
+        'dp_update_processed': True
+    }
+
+    dataset_dict = toolkit.get_action('package_show')(context,
+                                                      {'id': dataset_id})
+
+    # Get the latest existing_zip_resource to resolve race conditions, e.g.,
+    # during batch uploads.
+    dataset, resources_to_include, existing_zip_resource = \
+        util.remove_resources_that_should_not_be_included_in_the_datapackage(
+            dataset_dict)
+
     ckan_and_datapackage_resources = list(zip(dataset['resources'],
                                           datapackage['resources']))
 
@@ -35,13 +51,6 @@ def update_zip(dataset, datapackage, existing_zip_resource):
         _write_zip(zip_path, datapackage, ckan_and_datapackage_resources)
 
         # Upload the resource to CKAN as a new/updated resource
-        site_user = toolkit.get_action('get_site_user')({'ignore_auth': True}, {})
-        context = {
-            'ignore_auth': True,
-            'user': site_user['name'],
-            'dp_update_processed': True
-        }
-
         with open(zip_path, 'rb') as f:
             resource = dict(
                 package_id=dataset['id'],

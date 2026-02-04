@@ -70,5 +70,4 @@ def datapackage_update(context, data_dict):
                                       "haven't changed: {}")
                                    .format(dataset_dict['name'])})
 
-    toolkit.enqueue_job(jobs.update_zip,
-                        [dataset, datapackage, existing_zip_resource])
+    toolkit.enqueue_job(jobs.update_zip, [dataset_id, datapackage])
