@@ -6,6 +6,7 @@ import ckan.plugins.toolkit as toolkit
 from dplib.models import Package
 from frictionless import Package as fl_package
 from frictionless import FrictionlessException
+from pydantic import ValidationError as PydanticValidationError
 from werkzeug.datastructures import FileStorage
 
 from ckanext.datapackager.lib import util
@@ -42,7 +43,11 @@ def package_create_from_datapackage(context, data_dict):
     dp = _load_and_validate_datapackage(url=url, upload=upload)
 
     # Export the descriptor of DP from frictionless-py to dplib-py
-    dplib_dp = Package.from_dict(dp.to_dict())
+    try:
+        dplib_dp = Package.from_dict(dp.to_dict())
+    except PydanticValidationError as e:
+        msg = {'datapackage': e.errors()}
+        raise toolkit.ValidationError(msg)
 
     # Convert the Data Package to the CKAN dataset
     dataset_dict = util.create_dataset_from_datapackage(dplib_dp)
