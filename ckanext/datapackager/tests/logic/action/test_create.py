@@ -31,6 +31,23 @@ class TestPackageCreateFromDataPackage():
         with pytest.raises(toolkit.ValidationError):
             helpers.call_action('package_create_from_datapackage', url=url)
 
+    @responses.activate
+    def test_it_raises_if_datapackage_is_invalid_dplib_py(self):
+        url = 'http://www.example.com/datapackage.json'
+        datapackage = {
+            'name': 'foo',
+            'id': 1234,
+            'resources': [
+                {
+                    'name': 'the-resource',
+                    'path': 'http://www.example.com/data.csv',
+                }
+            ]
+        }
+        responses.add(responses.GET, url, json=datapackage)
+
+        with pytest.raises(toolkit.ValidationError):
+            helpers.call_action('package_create_from_datapackage', url=url)
 
     def test_it_raises_if_datapackage_is_unsafe(self):
         datapackage = {
