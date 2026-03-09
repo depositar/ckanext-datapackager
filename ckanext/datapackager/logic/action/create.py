@@ -1,5 +1,5 @@
-import random
 import tempfile
+import uuid
 import os
 
 import ckan.plugins.toolkit as toolkit
@@ -124,12 +124,12 @@ def _package_create_with_unique_name(context, dataset_dict, name=None):
     try:
         res = toolkit.get_action('package_create')(context, dataset_dict)
     except toolkit.ValidationError as e:
-        if not name and \
-           'That URL is already in use.' in e.error_dict.get('name', []):
-            random_num = random.randint(0, 9999999999)
-            name = '{name}-{rand}'.format(name=dataset_dict.get('name', 'dp'),
-                                          rand=random_num)
-            dataset_dict['name'] = name
+        if not name and 'name' in e.error_dict:
+            random_suffix = str(uuid.uuid4())[:8]
+            dataset_dict['name'] = '{name}-{rand}'.format(
+                name=dataset_dict.get('name', 'dataset')[:90],
+                rand=random_suffix
+            )
             res = toolkit.get_action('package_create')(context, dataset_dict)
         else:
             raise
