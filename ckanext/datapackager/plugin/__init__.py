@@ -100,13 +100,9 @@ class DataPackagerPlugin(plugins.SingletonPlugin):
         return
 
     def after_dataset_update(self, context, pkg_dict):
+        if (pkg_dict.get('state') != 'active'):
+            return
         _update_datapackage(pkg_dict.get('id'), context)
-
-    def after_resource_create(self, context, resource):
-        _update_datapackage(resource.get('package_id'), context)
-
-    def after_resource_update(self, context, resource):
-        _update_datapackage(resource.get('package_id'), context)
 
     def get_helpers(self):
         return {
