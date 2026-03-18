@@ -133,7 +133,7 @@ class TestDataPackageController():
             'resources': [
                 {
                     'name': 'the-resource',
-                    'url': 'http://www.somewhere.com/data.csv',
+                    'path': 'http://www.somewhere.com/data.csv',
                 }
             ]
         }
@@ -162,4 +162,4 @@ class TestDataPackageController():
         assert dataset['name'] == 'foo'
         assert len(dataset.get('resources', [])) == 1
         assert dataset['resources'][0].get('name') == 'the-resource'
-        assert (dataset['resources'][0].get('url') == datapackage['resources'][0]['url'])
+        assert (dataset['resources'][0].get('url') == datapackage['resources'][0]['path'])

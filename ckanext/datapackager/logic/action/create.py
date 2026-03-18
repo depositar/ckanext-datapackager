@@ -65,7 +65,7 @@ def package_create_from_datapackage(context, data_dict):
 
     if resources:
         try:
-            _create_resources(dataset_id, context, resources)
+            _create_resources(dataset_id, context, resources, dp.resources)
             res = toolkit.get_action('package_show')(
                 context, {'id': dataset_id})
         except Exception as e:
@@ -126,18 +126,20 @@ def _package_create_with_unique_name(context, dataset_dict, name=None):
     return res
 
 
-def _create_resources(dataset_id, context, resources):
+def _create_resources(dataset_id, context, resources, dp_resources):
     for resource in resources:
         resource['package_id'] = dataset_id
         if resource.get('data'):
             _create_and_upload_resource_with_inline_data(context, resource)
-        elif resource.get('path'):
-            _create_and_upload_local_resource(context, resource)
-        else:
-            # TODO: Investigate why in test_controller the resource['url'] is a list
-            if type(resource['url']) is list:
-                resource['url'] = resource['url'][0]
-            toolkit.get_action('resource_create')(context, resource)
+            continue
+        for dp_res in dp_resources:
+            if dp_res.descriptor['path'] != resource['url']:
+                continue
+            elif dp_res.local:
+                resource['path'] = dp_res.source
+                _create_and_upload_local_resource(context, resource)
+            else:
+                toolkit.get_action('resource_create')(context, resource)
 
 
 def _create_and_upload_resource_with_inline_data(context, resource):
@@ -161,7 +163,7 @@ def _create_and_upload_local_resource(context, resource):
     if isinstance(path, list):
         path = path[0]
     try:
-        with open(path, 'r') as f:
+        with open(path, 'rb') as f:
             _create_and_upload_resource(context, resource, f)
     except IOError:
         msg = {'datapackage': [(
