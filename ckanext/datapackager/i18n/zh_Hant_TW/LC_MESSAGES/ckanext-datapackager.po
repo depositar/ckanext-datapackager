@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ckanext-datapackager 1.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-10-15 10:10+0800\n"
+"POT-Creation-Date: 2026-05-15 15:36+0800\n"
 "PO-Revision-Date: 2025-09-09 11:29+0800\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: zh_Hant_TW\n"
@@ -53,11 +53,11 @@ msgid ""
 "haven't changed: {}"
 msgstr "此 Data Package 無需更新，因為後設資料與資源均未變更：{}"
 
-#: ckanext/datapackager/plugin/__init__.py:111
+#: ckanext/datapackager/plugin/__init__.py:81
 msgid "Updating Data Package is not allowed"
 msgstr "禁止更新 Data Package"
 
-#: ckanext/datapackager/plugin/__init__.py:128
+#: ckanext/datapackager/plugin/__init__.py:97
 msgid "Deleting Data Package is not allowed"
 msgstr "禁止刪除 Data Package"
 
@@ -82,8 +82,9 @@ msgid ""
 "A <a href=\"https://datapackage.org/\" target=\"_blank\">Data Package</a>"
 " is a simple container format used to describe and package a collection "
 "of data."
-msgstr "<a href=\"https://datapackage.org/\" target=\"_blank\">Data Package</a>"
-" 是一種簡單的容器格式，可用來描述與封裝一批資料。"
+msgstr ""
+"<a href=\"https://datapackage.org/\" target=\"_blank\">Data Package</a> "
+"是一種簡單的容器格式，可用來描述與封裝一批資料。"
 
 #: ckanext/datapackager/templates/datapackage/import_datapackage.html:22
 msgid ""
@@ -102,8 +103,9 @@ msgid ""
 "Upload a zipped Data Package that includes the data files, plus a Data "
 "Package descriptor (<i>datapackage.json</i> file) in the root of the ZIP "
 "file."
-msgstr "上傳 Data Package ZIP 壓縮檔，包含資料檔案以及 Data "
-"Package 描述檔（<i>datapackage.json</i> 檔案，置於壓縮檔根目錄）"
+msgstr ""
+"上傳 Data Package ZIP 壓縮檔，包含資料檔案以及 Data Package 描述檔（<i>datapackage.json</i>"
+" 檔案，置於壓縮檔根目錄）"
 
 #: ckanext/datapackager/templates/datapackage/snippets/import_datapackage_basic_fields.html:4
 msgid "File"
