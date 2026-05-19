@@ -1,5 +1,4 @@
-[![Tests](https://github.com/frictionlessdata/ckanext-datapackager/actions/workflows/test.yml/badge.svg)](https://github.com/frictionlessdata/ckanext-datapackager/actions/workflows/test.yml)
-[![Coverage Status](https://coveralls.io/repos/github/frictionlessdata/ckanext-datapackager/badge.svg?branch=master)](https://coveralls.io/github/frictionlessdata/ckanext-datapackager?branch=master)
+[![Tests](https://github.com/depositar/ckanext-datapackager/actions/workflows/test.yml/badge.svg)](https://github.com/depositar/ckanext-datapackager/actions/workflows/test.yml)
 
 # CKAN Data Packager
 
