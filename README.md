@@ -50,10 +50,34 @@ To install `ckanext-datapackager` into a CKAN instance, do:
 1. Go to the dataset's page;
 2. Click on `Download Data Package` button.
 
+### Automatic Data Package Generation
+
+When a dataset is created or edited, and the total size of the resources
+in the dataset is 10 MB
+(this can be configured via `ckanext.datapackager.max_dataset_size` config)
+or less, a Data Package will be generated
+automatically and uploaded as a resource for the dataset:
+
+* The Data Package file is named `datapackage.zip`.
+* The Data Package resource is NOT LISTED in the resource list
+  on the dataset page and the edit dataset page.
+* The Data Package resource is LISTED in the API results.
+  You need to exclude the Data Package resource when calculating
+  the resource count via the API.
+* The Data Package resource only includes data files uploaded to CKAN.
+  External URLs will only be listed in the `datapackage.json`
+  and any resource without a URL will not be included.
+* The Data Package resource will not be updated
+  (and the existing one will be deleted) if the dataset’s total resource size
+  exceeds 10 MB after editing, or if all resources lack a URL.
+* Automatic Data Package generation is a background task.
+  If the `Download Data Package` button does not appear,
+  please ensure the above conditions are met and refresh the dataset page.
+
 ### API
 
 
-The extension provides two API actions for importing (`package_create_from_datapackage`) and exporting (`package_show_as_datapackage`) Data Packages on CKAN.
+The extension provides three API actions for importing (`package_create_from_datapackage`), exporting (`package_show_as_datapackage`) and updating (`datapackage_update`) Data Packages on CKAN.
 
 For more information on their parameters and return values, check the
 docstrings inside the files at
@@ -122,6 +146,22 @@ For instance
     curl http://CKAN_HOST/dataset/bond-yields-uk-10y/datapackage.json
 
 
+#### Updating
+
+For updating the Data Package for a dataset:
+
+```
+curl -X POST \
+     -H 'Authorization: YOUR_CKAN_API_KEY' \
+     -d '{"id": "DATASET_NAME_OR_ID"}' \
+     http://CKAN_HOST/api/action/datapackage_update
+```
+
+Or if using ckanapi:
+
+    ckanapi action datapackage_update id=DATASET_NAME_OR_ID -r http://CKAN_HOST
+
+
 ## Developing ckanext-datapackager
 
 ### Running tests
@@ -130,7 +170,7 @@ You'll need to install the dev requirements to run the tests:
 
 To run the tests, do:
 
-    pytest --ckan-ini=test.ini ckanext/dcat/tests
+    pytest --ckan-ini=test.ini ckanext/datapackager/tests
 
 Note that ckanext-datapackager's `test.ini` file assumes that the relative path from it
 to CKAN's `test-core.ini` file is `../ckan/test-core.ini`, i.e. that you have
@@ -149,5 +189,5 @@ If you still need the old Data Packager, checkout this repository's commit
 [57cff1f](https://github.com/frictionlessdata/ckanext-datapackager/commit/57cff1f5112504091891195a097433579275f968).
 
 [ckan]: http://ckan.org
-[data-packages]: https://frictionlessdata.io/data-packages/
+[data-packages]: https://datapackage.org/
 [ckanapi]: https://github.com/ckan/ckanapi
