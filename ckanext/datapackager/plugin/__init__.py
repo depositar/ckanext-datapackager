@@ -104,7 +104,7 @@ class DataPackagerPlugin(plugins.SingletonPlugin, DefaultTranslation):
         return
 
     def after_dataset_update(self, context, pkg_dict):
-        if (pkg_dict.get('state') != 'active'):
+        if (pkg_dict.get('state') == 'draft'):
             return
         _update_datapackage(pkg_dict.get('id'), context)
 
